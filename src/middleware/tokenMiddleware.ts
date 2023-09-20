@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 
 import { isEmptyObj } from '@/common/function'
 import { NextFunction } from 'express'
-import { getShared, TableUser } from '@/model/other.model'
+import { getShared, TableUser } from '@/model/shared.model'
 
 const createToken = (data: any, expiresIn = process.env.EXPIRESIN) => {
   const SECRET_KEY = process.env.SECRET_KEY
@@ -49,7 +49,7 @@ const verifyToken = async (req: NewResquest, res: Response, next: NextFunction) 
       })
     }
     const { id } = data
-    const result = await getShared<any>({
+    const result = await getShared<userData>({
       select: 'id, username , full_name, bio, avatar',
       where: 'id=? AND token=?',
       data: [id, token],
@@ -58,7 +58,7 @@ const verifyToken = async (req: NewResquest, res: Response, next: NextFunction) 
       BASE_URL: req.getUrlPublic()
     })
 
-    if (!isEmptyObj(result)) {
+    if (result?.id) {
       req.data = result
       req.token = token
       next()
@@ -76,8 +76,4 @@ const verifyToken = async (req: NewResquest, res: Response, next: NextFunction) 
   }
 }
 
-module.exports = {
-  createToken,
-  verifyTokenFuc,
-  verifyToken
-}
+export { createToken, verifyTokenFuc, verifyToken }
