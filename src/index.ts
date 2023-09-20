@@ -6,6 +6,7 @@ import path from 'node:path'
 import http from 'http'
 import { Server } from 'socket.io'
 import { responsiveFuc } from './middleware/responsive.middleware'
+import { joinUrl } from './common/modelFuc'
 
 const app = express()
 const PORT = process.env.PORT
@@ -26,7 +27,7 @@ app.use(function (req, _res, next) {
     return url
   }
   req.getUrlPublic = function (folder = 'images') {
-    return `${req.getUrl()}${folder ? `/${folder}` : ''}/`
+    return joinUrl(folder ?? '/', req.getUrl())
   }
 
   req.getDirRoot = (key = 'public') => {

@@ -9,12 +9,12 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },
-  "files": ["src/type.d.ts"],
+  "files": ["src/type.d.ts", "src/index.d.ts"],
   "include": ["src/**/*"]
 }
