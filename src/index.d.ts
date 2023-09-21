@@ -105,4 +105,12 @@ declare global {
 
   type paginationFuncType = <T>(obj: paginationType) => Promise<paginationReturn<T>>
   type sharedPaginationFucType = (obj: sharedPaginationType) => Promise<paginationReturn>
+
+  interface userData {
+    id: number
+    username: string
+    full_name: string | null
+    bio: string | null
+    avatar: string | null
+  }
 }

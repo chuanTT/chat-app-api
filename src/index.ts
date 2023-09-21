@@ -7,6 +7,7 @@ import http from 'http'
 import { Server } from 'socket.io'
 import { responsiveFuc } from './middleware/responsive.middleware'
 import { joinUrl } from './common/modelFuc'
+import router from './router'
 
 const app = express()
 const PORT = process.env.PORT
@@ -47,6 +48,8 @@ app.use(function (req, _res, next) {
 })
 
 app.use(responsiveFuc)
+
+app.use('/api/v1', router)
 
 const server = http.createServer(app)
 const io = new Server(server)
