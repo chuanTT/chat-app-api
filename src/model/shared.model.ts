@@ -20,16 +20,15 @@ const getSharedPagination: sharedPaginationFucType = async <T>({
   return result
 }
 
-const getShared = async <T>({
-  select = '*',
-  where = '',
-  data = [],
-  isImages = true,
-  key = 'thumb',
+const getOneShared = async <T>({
+  select,
+  table,
+  where,
+  isWhere,
+  data,
+  isImages,
   BASE_URL = '',
-  isArr = false,
-  table = '',
-  isWhere = false
+  key = 'thumb'
 }: getSharedType): Promise<T> => {
   let result: any = {}
 
@@ -40,17 +39,38 @@ const getShared = async <T>({
     )
 
     if (Array?.isArray(row) && row?.length > 0) {
-      if (where) {
-        result = isImages
-          ? PathImages({ data: !isArr ? (row[0] as typeObject) : row, key, BASE_URL })
-          : !isArr
-          ? row[0]
-          : row
-      } else {
-        result = isImages ? PathImages({ data: row, key, BASE_URL }) : row
-      }
-    } else {
-      result = !isArr ? {} : []
+      result = (isImages ? PathImages({ data: row[0] as typeObject, key, BASE_URL }) : row[0]) as T
+    }
+  } catch (err) {
+    console.log(err)
+  } finally {
+    console.log(result)
+    // eslint-disable-next-line no-unsafe-finally
+    return result
+  }
+}
+
+const getShared = async <T>({
+  select = '*',
+  where = '',
+  data = [],
+  isImages = true,
+  key = 'thumb',
+  BASE_URL = '',
+  isArr = false,
+  table = '',
+  isWhere = false
+}: getSharedType): Promise<T[]> => {
+  let result: T[] = []
+
+  try {
+    const [row] = await pool.execute(
+      `SELECT ${select} FROM ${table} ${!isWhere ? `${where ? `WHERE ${where}` : ''}` : where} `,
+      data
+    )
+
+    if (Array?.isArray(row) && row?.length > 0) {
+      result = (isImages ? PathImages({ data: row, key, BASE_URL }) : row) as T[]
     }
   } catch (err) {
     console.log(err)
@@ -132,5 +152,6 @@ export {
   getSharedPagination,
   DeleteSharedForce,
   getSharedNoImage,
+  getOneShared,
   TableUser
 }

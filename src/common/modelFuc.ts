@@ -115,4 +115,15 @@ const getFormat = (dateString = '') => {
   return `${y}-${m}-${day}`
 }
 
-export { appendValues, updateSelect, joinUrl, PathImages, convertViToEn, aliasConvert, getFormat }
+const genderCheck = (gerder: number) => (gerder === 1 ? 1 : 0)
+
+export {
+  appendValues,
+  updateSelect,
+  joinUrl,
+  PathImages,
+  convertViToEn,
+  aliasConvert,
+  getFormat,
+  genderCheck
+}

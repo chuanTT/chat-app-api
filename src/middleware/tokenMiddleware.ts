@@ -4,10 +4,11 @@ import jwt from 'jsonwebtoken'
 
 import { isEmptyObj } from '@/common/function'
 import { NextFunction } from 'express'
-import { getShared, TableUser } from '@/model/shared.model'
+import { getOneShared, getShared, TableUser } from '@/model/shared.model'
 
 const createToken = (data: any, expiresIn = process.env.EXPIRESIN) => {
   const SECRET_KEY = process.env.SECRET_KEY
+  console.log(SECRET_KEY)
   let token = ''
   if (SECRET_KEY) {
     token = jwt.sign(data, process.env.SECRET_KEY ?? '', { expiresIn })
@@ -49,7 +50,7 @@ const verifyToken = async (req: NewResquest, res: Response, next: NextFunction) 
       })
     }
     const { id } = data
-    const result = await getShared<userData>({
+    const result = await getOneShared<userData>({
       select: 'id, username , full_name, bio, avatar',
       where: 'id=? AND token=?',
       data: [id, token],

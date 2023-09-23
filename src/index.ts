@@ -22,6 +22,7 @@ app.use(
 )
 
 app.use(function (req, _res, next) {
+  console.log(1)
   req.getUrl = function () {
     const proto = req.headers['x-forwarded-proto'] || req.protocol
     const url = `${proto}://${req.get('host')}`

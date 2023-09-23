@@ -22,16 +22,47 @@ const createQuery = (table, config) => {
   return sql
 }
 
+const createForkey = (table, config) => {
+  const sql = `ALTER TABLE ${table}`
+  const arrSql = []
+  const arrKeyConfig = Object.keys(config)
+  arrKeyConfig?.forEach((key) => {
+    const itemConfig = config?.[key]
+    if (!itemConfig?.foreign_key) return
+    const newSql = `${sql} ADD FOREIGN KEY (${key}) REFERENCES ${itemConfig?.foreign_key?.table} (${itemConfig?.foreign_key?.column})`
+    arrSql.push(newSql)
+  })
+  return arrSql
+}
+
+function awaitAll(list, asyncFn) {
+  const promises = []
+
+  list.map((x, i) => {
+    promises.push(asyncFn(x, i))
+  })
+
+  return Promise.all(promises)
+}
+
 // INCREMENT isUnique UNIQUE
 const initTable = {
   friend: {
     owner_id: {
       isPrimary: true,
-      type: 'int'
+      type: 'int',
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
     },
     friend_id: {
       isPrimary: true,
-      type: 'int'
+      type: 'int',
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
     },
     created_at: {
       type: 'timestamp',
@@ -41,10 +72,20 @@ const initTable = {
 
   invitation: {
     owner_id: {
-      type: 'int'
+      type: 'int',
+      isPrimary: true,
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
     },
     friend_id: {
-      type: 'int'
+      type: 'int',
+      isPrimary: true,
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
     },
     created_at: {
       type: 'timestamp',
@@ -59,14 +100,189 @@ const initTable = {
       isIncrement: true
     },
     owner_id: {
-      type: 'int'
+      type: 'int',
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
     },
     room_id: {
-      type: 'int'
+      type: 'int',
+      foreign_key: {
+        table: 'room',
+        column: 'id'
+      }
     },
     is_block: {
       type: 'varchar(1)',
       default: '0'
+    }
+  },
+
+  room: {
+    id: {
+      type: 'int',
+      isPrimary: true,
+      isIncrement: true
+    },
+    owner_id: {
+      type: 'int',
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
+    },
+    friend_id: {
+      type: 'int',
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
+    },
+    created_at: {
+      type: 'timestamp',
+      default: 'CURRENT_TIMESTAMP'
+    }
+  },
+
+  room_details: {
+    id: {
+      type: 'int',
+      isPrimary: true,
+      isIncrement: true
+    },
+    room_id: {
+      type: 'int',
+      foreign_key: {
+        table: 'room',
+        column: 'id'
+      }
+    },
+    owner_id: {
+      type: 'int',
+      foreign_key: {
+        table: 'users',
+        column: 'id'
+      }
+    },
+
+    messeage: {
+      type: 'text'
+    },
+
+    is_media: {
+      type: 'varchar(1)',
+      default: '0'
+    },
+
+    is_edit: {
+      type: 'varchar(1)',
+      default: '0'
+    },
+
+    created_at: {
+      type: 'timestamp',
+      default: 'CURRENT_TIMESTAMP'
+    },
+
+    updated_at: {
+      type: 'timestamp',
+      default: 'CURRENT_TIMESTAMP'
+    }
+  },
+
+  media_list: {
+    id: {
+      type: 'int',
+      isPrimary: true,
+      isIncrement: true
+    },
+    id_messeage: {
+      type: 'int',
+      foreign_key: {
+        table: 'room_details',
+        column: 'id'
+      }
+    },
+    media: {
+      type: 'varchar(255)'
+    },
+
+    created_at: {
+      type: 'timestamp',
+      default: 'CURRENT_TIMESTAMP'
+    },
+
+    updated_at: {
+      type: 'timestamp',
+      default: 'CURRENT_TIMESTAMP'
+    }
+  },
+
+  users: {
+    id: {
+      type: 'int',
+      isPrimary: true,
+      isIncrement: true
+    },
+    username: {
+      type: 'varchar(255)',
+      isUnique: true
+    },
+
+    full_name: {
+      type: 'varchar(255)'
+    },
+
+    avatar: {
+      type: 'varchar(255)'
+    },
+
+    birthday: {
+      type: 'timestamp'
+    },
+
+    gender: {
+      type: 'varchar(1)',
+      default: '0'
+    },
+
+    is_online: {
+      type: 'varchar(1)',
+      default: '0'
+    },
+
+    is_lock: {
+      type: 'varchar(1)',
+      default: '0'
+    },
+
+    is_block_stranger: {
+      type: 'varchar(1)',
+      default: '0'
+    },
+
+    is_busy: {
+      type: 'varchar(1)',
+      default: '0'
+    },
+
+    password: {
+      type: 'varchar(255)'
+    },
+
+    token: {
+      type: 'varchar(255)'
+    },
+
+    created_at: {
+      type: 'timestamp',
+      default: 'CURRENT_TIMESTAMP'
+    },
+
+    updated_at: {
+      type: 'timestamp',
+      default: 'CURRENT_TIMESTAMP'
     }
   }
 }
@@ -74,27 +290,37 @@ const initTable = {
 const pool = mysql.createPool({
   host: process.env.HOST || '127.0.0.1',
   user: process.env.USER_DB || 'root',
-  password: process.env.PASSWORD || ''
+  password: process.env.PASSWORD || '',
+  database: process.env.DATABASE || ''
 })
 
-// ;(async () => {
-//   try {
-//     await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
-//     await pool.query(`DROP DATABASE ${process.env.DATABASE ?? 'chuandinh'}`)
-//     await pool.query(`CREATE DATABASE ${process.env.DATABASE ?? 'chuandinh'}`)
-//   } catch {
-//     await pool.query(`CREATE DATABASE ${process.env.DATABASE ?? 'chuandinh'}`)
-//   } finally {
-//     await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
-//     const sql = `CREATE TABLE friend (owner_id integer, friend_id integer, created_at timestamp DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (owner_id, friend_id))`
-//     await pool.query(sql)
+;(async () => {
+  console.time()
+  try {
+    await pool.query(`USE chuandinh`)
+    await pool.query(`DROP DATABASE chuandinh`)
+    await pool.query(`CREATE DATABASE chuandinh`)
+  } catch {
+    await pool.query(`CREATE DATABASE chuandinh`)
+  } finally {
+    await pool.query(`USE chuandinh`)
+    const arrKey = Object.keys(initTable)
 
-//     console.log('oke')
-//   }
-// })()
+    let arrNewSql = []
 
-const arrKey = Object.keys(initTable)
+    await awaitAll(arrKey, async (table) => {
+      await pool.query(`USE chuandinh`)
+      const sql = createQuery(table, initTable[table])
+      await pool.query(sql)
+      const arrSql = createForkey(table, initTable[table])
+      arrNewSql = [...arrNewSql, ...arrSql]
+    })
 
-arrKey.forEach((table) => {
-  console.log(createQuery(table, initTable[table]))
-})
+    await awaitAll(arrNewSql, async (sql) => {
+      await pool.query(`USE chuandinh`)
+      await pool.query(sql)
+    })
+    console.timeEnd()
+    console.log('oke')
+  }
+})()
