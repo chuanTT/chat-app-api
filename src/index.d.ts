@@ -53,7 +53,7 @@ declare global {
     sql: string
     page?: number
     limit?: number
-    variable?: (string | number)[]
+    variable?: (string | number | null)[]
     key?: string
     isASC?: boolean
   }
@@ -80,14 +80,14 @@ declare global {
 
   interface UpdatedSharedType {
     select: string[]
-    values: (string | number)[]
+    values: (string | number | null)[]
     where?: string
     table: string
   }
 
   interface DeleteSharedForceType {
     where?: string
-    value?: (string | number)[]
+    value?: (string | number | null)[]
     table: string
   }
 
@@ -109,8 +109,23 @@ declare global {
   interface userData {
     id: number
     username: string
-    full_name: string | null
-    bio: string | null
-    avatar: string | null
+    full_name?: string | null
+    birthday?: string | null
+    avatar?: string | null
+    gender?: number
+    is_online?: number
+    is_lock?: number
+    is_block_stranger?: number
+    is_busy?: number
+    password?: string
+    token?: string
+    created_at?: string
+    updated_at?: string
+  }
+
+  interface resultActionUser {
+    owner_id: number
+    friend_id: number
+    created_at?: string
   }
 }

@@ -3,6 +3,7 @@ import pagination from './pagination.model'
 import pool from '@/config/db'
 
 const TableUser = 'users'
+const TableInvitation = 'invitation'
 
 const getSharedPagination: sharedPaginationFucType = async <T>({
   select = '*',
@@ -153,5 +154,6 @@ export {
   DeleteSharedForce,
   getSharedNoImage,
   getOneShared,
-  TableUser
+  TableUser,
+  TableInvitation
 }

@@ -3,12 +3,11 @@ config()
 import jwt from 'jsonwebtoken'
 
 import { isEmptyObj } from '@/common/function'
-import { NextFunction } from 'express'
-import { getOneShared, getShared, TableUser } from '@/model/shared.model'
+import { NextFunction, Response } from 'express'
+import { getOneShared, TableUser } from '@/model/shared.model'
 
 const createToken = (data: any, expiresIn = process.env.EXPIRESIN) => {
   const SECRET_KEY = process.env.SECRET_KEY
-  console.log(SECRET_KEY)
   let token = ''
   if (SECRET_KEY) {
     token = jwt.sign(data, process.env.SECRET_KEY ?? '', { expiresIn })
@@ -31,7 +30,7 @@ const getTokenFuc = (req: any): string => {
   return token
 }
 
-const verifyToken = async (req: NewResquest, res: Response, next: NextFunction) => {
+const verifyToken = async (req: any, res: Response, next: NextFunction) => {
   const token = getTokenFuc(req)
 
   if (!token) {
@@ -51,11 +50,12 @@ const verifyToken = async (req: NewResquest, res: Response, next: NextFunction) 
     }
     const { id } = data
     const result = await getOneShared<userData>({
-      select: 'id, username , full_name, bio, avatar',
+      select: 'id, username, full_name, birthday, avatar',
       where: 'id=? AND token=?',
       data: [id, token],
       key: 'avatar',
       table: TableUser,
+      isImages: true,
       BASE_URL: req.getUrlPublic()
     })
 

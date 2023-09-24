@@ -2,45 +2,36 @@ import { bcryptCompare, bcryptPass } from '@/common/bcryptFuc'
 import { defaultAvatarGender } from '@/common/default'
 import { genderCheck } from '@/common/modelFuc'
 import { createToken } from '@/middleware/tokenMiddleware'
-import { InsertShared, TableUser, UpdatedShared, getSharedNoImage } from '@/model/shared.model'
+import { InsertShared, TableUser, UpdatedShared, getOneShared } from '@/model/shared.model'
 
 const LoginController = async (req: NewResquest) => {
-  const { account, password } = req.body
+  const { username, password } = req.body
 
-  console.log(account, password)
+  const result = await getOneShared<userData>({
+    table: TableUser,
+    select: 'id, password',
+    where: 'username=?',
+    data: [username]
+  })
 
-  // const result = await getSharedNoImage<{
-  //   id: number
-  //   username?: string
-  //   password?: string
-  // }>({
-  //   select: 'id, username, password',
-  //   data: [account],
-  //   table: TableUser,
-  //   where: 'username=?'
-  // })
+  if (result?.id) {
+    const isHasPass = bcryptCompare(password, result?.password ?? '')
 
-  // if (!Array.isArray(result) && result?.username) {
-  //   const isHasPass = bcryptCompare(password, result?.password ?? '')
+    if (isHasPass) {
+      const { password: newPwd, ...restData } = result
+      const token = createToken({ ...restData })
+      await UpdatedShared({
+        select: ['token'],
+        values: [token, restData?.id],
+        table: TableUser
+      })
 
-  //   if (isHasPass) {
-  //     const { password: newPwd, ...restData } = result
-  //     const token = createToken({ ...restData })
-  //     await UpdatedShared({
-  //       select: ['token'],
-  //       values: [token, restData?.id],
-  //       table: TableUser
-  //     })
-
-  //     return req.successOke({
-  //       msg: 'Tạo tài khoản thành công',
-  //       data: {
-  //         token,
-  //         expiresin: process.env.EXPIRESIN
-  //       }
-  //     })
-  //   }
-  // }
+      return req.successOke({
+        msg: 'Tạo tài khoản thành công',
+        data: { token }
+      })
+    }
+  }
 
   return req.errorFuc({
     msg: 'Tài khoản hoặc mật khẩu không chính xác',
@@ -82,4 +73,31 @@ const ResgiterController = async (req: NewResquest) => {
   })
 }
 
-export { LoginController, ResgiterController }
+const LogoutController = async (req: NewResquest) => {
+  const { id } = req.data
+  const expiedToken = await UpdatedShared({
+    select: ['token', 'is_online'],
+    values: ['null', 0, id],
+    table: TableUser
+  })
+
+  if (expiedToken) {
+    return req.successOke({
+      msg: 'Đăng xuất thành công'
+    })
+  }
+
+  return req.errorFuc({
+    code: 400,
+    msg: 'Lỗi không xác định'
+  })
+}
+
+const verifyTokenController = async (req: NewResquest) => {
+  return req.successOke({
+    msg: 'Lấy dữ liệu thành công',
+    data: req.data
+  })
+}
+
+export { LoginController, ResgiterController, LogoutController, verifyTokenController }
