@@ -4,6 +4,7 @@ import pool from '@/config/db'
 
 const TableUser = 'users'
 const TableInvitation = 'invitation'
+const TableFriend = 'friend'
 
 const getSharedPagination: sharedPaginationFucType = async <T>({
   select = '*',
@@ -45,7 +46,6 @@ const getOneShared = async <T>({
   } catch (err) {
     console.log(err)
   } finally {
-    console.log(result)
     // eslint-disable-next-line no-unsafe-finally
     return result
   }
@@ -58,7 +58,6 @@ const getShared = async <T>({
   isImages = true,
   key = 'thumb',
   BASE_URL = '',
-  isArr = false,
   table = '',
   isWhere = false
 }: getSharedType): Promise<T[]> => {
@@ -155,5 +154,6 @@ export {
   getSharedNoImage,
   getOneShared,
   TableUser,
-  TableInvitation
+  TableInvitation,
+  TableFriend
 }

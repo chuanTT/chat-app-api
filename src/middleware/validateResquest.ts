@@ -3,7 +3,7 @@ import { unlinkFile } from '@/common/uploadFile'
 import { ConfigError } from '@/common/validate'
 
 const validateResquest =
-  (LoadConfig: configValidateType) => (req: NewResquest, _res: any, next: () => void) => {
+  (LoadConfig: configValidateType) => (req: any, _res: any, next: () => void) => {
     let object = Object.assign({}, req?.body)
     object = { ...object, ...req?.params, ...req?.query }
     let arrErorr = {}

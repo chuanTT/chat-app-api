@@ -1,9 +1,9 @@
 import { config } from 'dotenv'
 config()
 import jwt from 'jsonwebtoken'
+import { NextFunction, Response } from 'express'
 
 import { isEmptyObj } from '@/common/function'
-import { NextFunction, Response } from 'express'
 import { getOneShared, TableUser } from '@/model/shared.model'
 
 const createToken = (data: any, expiresIn = process.env.EXPIRESIN) => {
