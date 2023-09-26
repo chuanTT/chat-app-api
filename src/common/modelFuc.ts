@@ -50,6 +50,7 @@ const PathImages = ({
   BASE_URL: string
 }) => {
   let result: any[] | typeObject = []
+
   if (Array.isArray(data)) {
     result = data.map((item: typeObject) => {
       // eslint-disable-next-line no-prototype-builtins
@@ -66,9 +67,9 @@ const PathImages = ({
       if (newData?.hasOwnProperty(key)) {
         const slug = checkPathDefault(newData[key] as string)
         newData[key] = joinUrl(slug, BASE_URL)
-        result = newData
       }
     }
+    result = newData
   }
 
   return result

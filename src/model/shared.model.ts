@@ -30,7 +30,7 @@ const getOneShared = async <T>({
   data,
   isImages,
   BASE_URL = '',
-  key = 'thumb'
+  key = 'avatar'
 }: getSharedType): Promise<T> => {
   let result: any = {}
 
@@ -56,7 +56,7 @@ const getShared = async <T>({
   where = '',
   data = [],
   isImages = true,
-  key = 'thumb',
+  key = 'avatar',
   BASE_URL = '',
   table = '',
   isWhere = false

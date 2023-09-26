@@ -98,7 +98,6 @@ declare global {
     isImages?: boolean
     key?: string
     BASE_URL?: string
-    isArr?: boolean
     table?: string
     isWhere?: boolean
   }
