@@ -8,4 +8,14 @@ const isEmptyObj = (obj: typeObject) => {
   return emty
 }
 
-export { removeProperty, isEmptyObj }
+const awaitAll = <T, R>(list: T[], asyncFn: (item: T, index: number) => R) => {
+  const promises: R[] = []
+
+  list.map((x, i) => {
+    promises.push(asyncFn(x, i))
+  })
+
+  return Promise.all(promises)
+}
+
+export { removeProperty, isEmptyObj, awaitAll }

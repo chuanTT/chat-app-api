@@ -1,3 +1,5 @@
+import { checkPathDefault } from './default'
+
 // services
 const appendValues = (num: number, link = '?') => {
   const str = `,${link}`.repeat(num)
@@ -52,7 +54,8 @@ const PathImages = ({
     result = data.map((item: typeObject) => {
       // eslint-disable-next-line no-prototype-builtins
       if (item?.hasOwnProperty(key)) {
-        item[key] = joinUrl(item[key] as string, BASE_URL)
+        const slug = checkPathDefault(item[key] as string)
+        item[key] = joinUrl(slug, BASE_URL)
       }
       return item
     })
@@ -61,7 +64,8 @@ const PathImages = ({
     if (typeof data === 'object' && !Array.isArray(data)) {
       // eslint-disable-next-line no-prototype-builtins
       if (newData?.hasOwnProperty(key)) {
-        newData[key] = joinUrl(newData[key] as string, BASE_URL)
+        const slug = checkPathDefault(newData[key] as string)
+        newData[key] = joinUrl(slug, BASE_URL)
         result = newData
       }
     }

@@ -66,7 +66,7 @@ const initTable = {
     },
     created_at: {
       type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      default: 'CURRENT_TIMESTAMP()'
     }
   },
 
@@ -89,7 +89,7 @@ const initTable = {
     },
     created_at: {
       type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      default: 'CURRENT_TIMESTAMP()'
     }
   },
 
@@ -141,7 +141,7 @@ const initTable = {
     },
     created_at: {
       type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      default: 'CURRENT_TIMESTAMP()'
     }
   },
 
@@ -181,13 +181,11 @@ const initTable = {
     },
 
     created_at: {
-      type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      type: 'timestamp'
     },
 
     updated_at: {
-      type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      type: 'timestamp'
     }
   },
 
@@ -209,13 +207,11 @@ const initTable = {
     },
 
     created_at: {
-      type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      type: 'timestamp'
     },
 
     updated_at: {
-      type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      type: 'timestamp'
     }
   },
 
@@ -276,13 +272,11 @@ const initTable = {
     },
 
     created_at: {
-      type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      type: 'timestamp'
     },
 
     updated_at: {
-      type: 'timestamp',
-      default: 'CURRENT_TIMESTAMP'
+      type: 'timestamp'
     }
   }
 }
@@ -299,9 +293,9 @@ const pool = mysql.createPool({
   try {
     await pool.query(`USE chuandinh`)
     await pool.query(`DROP DATABASE chuandinh`)
-    await pool.query(`CREATE DATABASE chuandinh`)
+    await pool.query(`CREATE DATABASE chuandinh /*!40100 COLLATE 'utf8_unicode_ci' */`)
   } catch {
-    await pool.query(`CREATE DATABASE chuandinh`)
+    await pool.query(`CREATE DATABASE chuandinh /*!40100 COLLATE 'utf8_unicode_ci' */`)
   } finally {
     await pool.query(`USE chuandinh`)
     const arrKey = Object.keys(initTable)

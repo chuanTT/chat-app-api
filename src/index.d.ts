@@ -58,7 +58,7 @@ declare global {
     isASC?: boolean
   }
 
-  interface sharedPaginationType extends paginationType {
+  type sharedPaginationType = Omit<paginationType, 'sql'> & {
     select?: string
     where?: string
     table: string
@@ -102,9 +102,6 @@ declare global {
     table?: string
     isWhere?: boolean
   }
-
-  type paginationFuncType = <T>(obj: paginationType) => Promise<paginationReturn<T>>
-  type sharedPaginationFucType = (obj: sharedPaginationType) => Promise<paginationReturn>
 
   interface userData {
     id: number

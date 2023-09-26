@@ -6,12 +6,12 @@ const TableUser = 'users'
 const TableInvitation = 'invitation'
 const TableFriend = 'friend'
 
-const getSharedPagination: sharedPaginationFucType = async <T>({
+const getSharedPagination = async <T>({
   select = '*',
   where,
   table = '',
   ...rest
-}: sharedPaginationType) => {
+}: sharedPaginationType): Promise<paginationReturn<T>> => {
   const sql = `SELECT ${select} FROM ${table} ${where ? `WHERE ${where}` : ''}`
 
   const result = await pagination<T>({

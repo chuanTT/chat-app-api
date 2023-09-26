@@ -1,14 +1,14 @@
 import pool from '@/config/db'
 
 // paging
-const pagination: paginationFuncType = async <T>({
+const pagination = async <T>({
   sql = '',
   page = 1,
   limit = 10,
   variable = [],
-  key = 'id',
+  key,
   isASC = false
-}: paginationType) => {
+}: paginationType): Promise<paginationReturn<T>> => {
   const SELECT = 'SELECT'
   const FROM = 'FROM'
 
@@ -21,7 +21,6 @@ const pagination: paginationFuncType = async <T>({
       total: 0
     }
   }
-
   const pages = (page - 1) * limit
   const indexStr = sql.indexOf(FROM)
   const endStr = sql.substring(indexStr)
@@ -29,11 +28,9 @@ const pagination: paginationFuncType = async <T>({
   const sqlQuery = `${sql} ${
     key ? `ORDER BY ${key} ${isASC ? 'ASC' : 'DESC'}` : ''
   } LIMIT ? OFFSET ?`
-  //
 
   const sqlTotal = `${SELECT} COUNT(*) as total ${endStr}`
   try {
-    //
     const [row] = await pool.execute(sqlQuery, [...variable, limit.toString(), pages.toString()])
     const [total] = await pool.execute(sqlTotal, [...variable])
     if (Array.isArray(row) && row?.length > 0) {

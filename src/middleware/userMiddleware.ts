@@ -1,5 +1,4 @@
 import { isEmptyObj } from '@/common/function'
-import { isNumber, isRequired } from '@/common/validate'
 import { TableUser, getOneShared } from '@/model/shared.model'
 import { NextFunction, Response } from 'express'
 
@@ -34,35 +33,31 @@ const middlewareUserFieldExist = ({
   whereField?: string
 }) => {
   return async (req: any, res: Response, next: NextFunction) => {
+    const { id } = req.data
     const dataDynamic = { ...req.body, ...req.query, ...req.params }
 
-    console.log(dataDynamic)
+    if (id !== Number(dataDynamic?.[key])) {
+      const checkUserExist = await getOneShared<any>({
+        select: field,
+        where: whereField,
+        data: [dataDynamic[key]],
+        table: TableUser
+      })
 
-    const checkUserExist = await getOneShared<any>({
-      select: field,
-      where: whereField,
-      data: [dataDynamic[key]],
-      table: TableUser
-    })
-
-    if (!isEmptyObj(checkUserExist)) {
-      return next()
+      if (!isEmptyObj(checkUserExist)) {
+        return next()
+      } else {
+        return (req as NewResquest).errorFuc({
+          msg: 'Tài khoản không tồn tại',
+          code: 422
+        })
+      }
     } else {
       return (req as NewResquest).errorFuc({
-        msg: 'Tài khoản không tồn tại'
+        msg: 'Lỗi không xác định'
       })
     }
   }
 }
 
-const configUserField: configValidateType = {
-  invite: {
-    rules: [isRequired, isNumber],
-    msg: {
-      isRequired: 'id bạn bè không được để trống',
-      isNumber: 'Phải là số'
-    }
-  }
-}
-
-export { middlewareUserExist, middlewareUserFieldExist, configUserField }
+export { middlewareUserExist, middlewareUserFieldExist }

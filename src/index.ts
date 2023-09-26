@@ -21,6 +21,8 @@ app.use(
   })
 )
 
+app.use(express.static('src/public'))
+
 app.use(function (req, _res, next) {
   console.log(1)
   req.getUrl = function () {
