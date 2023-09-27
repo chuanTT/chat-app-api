@@ -79,16 +79,16 @@ const checkPathCreateFolder = (path: string) => {
   return error
 }
 
-const copyFile = (path: string, pathCopy: string) => {
+const copyFileCustom = (path: string, pathCopy: string) => {
   let err = false
   try {
     fs.copyFileSync(path, pathCopy)
     unlinkFile(path)
-  } catch {
+  } catch (erros) {
     err = false
   }
 
   return err
 }
 
-export { storageFile, uploadFile, unlinkFile, checkPathCreateFolder, copyFile }
+export { storageFile, uploadFile, unlinkFile, checkPathCreateFolder, copyFileCustom }

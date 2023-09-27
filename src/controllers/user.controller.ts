@@ -1,7 +1,7 @@
 import { checkAvatarDefault } from '@/common/default'
 import { awaitAll } from '@/common/function'
 import { checkValueResquest, genderCheck } from '@/common/modelFuc'
-import { unlinkFile } from '@/common/uploadFile'
+import { checkPathCreateFolder, copyFileCustom, unlinkFile } from '@/common/uploadFile'
 import { uploadUser } from '@/middleware/userMiddleware'
 import {
   DeleteSharedForce,
@@ -19,7 +19,7 @@ const loadFriends = async (req: NewResquest) => {
   const result = await getSharedPagination<resultActionUser>({
     select: '*',
     table: TableFriend,
-    where: 'owner_id=? OR friend_id',
+    where: 'owner_id = ? OR friend_id = ?',
     variable: [id]
   })
 
@@ -157,15 +157,18 @@ const updateMe = async (req: NewResquest, res: Express.Response) => {
         if (req?.file?.filename) {
           const isDefaultAvatar = checkAvatarDefault(oldAvatar)
           const BASE_URL_ROOT = path.join(req.getDirRoot(), 'images', `user-${id}`)
+          checkPathCreateFolder(BASE_URL_ROOT)
           if (!isDefaultAvatar) {
             unlinkFile(path.join(BASE_URL_ROOT, oldAvatar))
           }
+          copyFileCustom(req?.file?.path, path.join(BASE_URL_ROOT, req.file.filename))
         }
 
         return req.successOke({
           msg: 'Cập nhật thành công'
         })
       }
+      req?.file?.filename && unlinkFile(req?.file?.path)
 
       return req.errorFuc({
         msg: 'Lỗi không xác định'

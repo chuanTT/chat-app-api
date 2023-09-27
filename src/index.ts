@@ -54,7 +54,15 @@ app.use(responsiveFuc)
 app.use('/api/v1', router)
 
 const server = http.createServer(app)
-const io = new Server(server)
+const io = new Server(server, {
+  cors: {
+    origin: '*'
+  }
+})
 global.socketServer = io
+
+io.on('connection', (socket) => {
+  console.log(socket.id)
+})
 
 server.listen(PORT)

@@ -94,11 +94,11 @@ const initTable = {
   },
 
   room_setting: {
-    id: {
-      type: 'int',
-      isPrimary: true,
-      isIncrement: true
-    },
+    // id: {
+    //   type: 'int',
+    //   isPrimary: true,
+    //   isIncrement: true
+    // },
     owner_id: {
       type: 'int',
       foreign_key: {

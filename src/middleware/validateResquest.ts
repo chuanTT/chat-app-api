@@ -25,13 +25,13 @@ const validateResquest =
       next()
     } else {
       if (req?.file?.filename) {
-        unlinkFile(req?.file?.filename, req?.file?.destination, '')
+        unlinkFile(req?.file?.path)
       }
 
       if (req?.files) {
         if (Array.isArray(req?.files)) {
           req?.files?.forEach((file: any) => {
-            unlinkFile(file?.filename, file?.destination, '')
+            unlinkFile(file?.path)
           })
         }
       }

@@ -5,6 +5,7 @@ import pool from '@/config/db'
 const TableUser = 'users'
 const TableInvitation = 'invitation'
 const TableFriend = 'friend'
+const TableRoom = 'room'
 
 const getSharedPagination = async <T>({
   select = '*',
@@ -155,5 +156,6 @@ export {
   getOneShared,
   TableUser,
   TableInvitation,
-  TableFriend
+  TableFriend,
+  TableRoom
 }
