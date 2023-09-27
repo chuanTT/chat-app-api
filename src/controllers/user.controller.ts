@@ -1,11 +1,17 @@
+import { checkAvatarDefault } from '@/common/default'
 import { awaitAll } from '@/common/function'
+import { checkValueResquest, genderCheck } from '@/common/modelFuc'
+import { unlinkFile } from '@/common/uploadFile'
+import { uploadUser } from '@/middleware/userMiddleware'
 import {
   DeleteSharedForce,
   TableFriend,
   TableUser,
+  UpdatedShared,
   getOneShared,
   getSharedPagination
 } from '@/model/shared.model'
+import path from 'path'
 
 const loadFriends = async (req: NewResquest) => {
   const { id } = req.data
@@ -90,4 +96,86 @@ const getMe = async (req: NewResquest) => {
   })
 }
 
-export { loadFriends, getMe, unFriend }
+const updateMe = async (req: NewResquest, res: Express.Response) => {
+  const { id } = req.data
+  const { update, data: newDataRequest } = checkValueResquest({
+    obj: req.body,
+    allowKey: [
+      'full_name',
+      'birthday',
+      {
+        key: 'gender',
+        fuc: (v) => genderCheck(v as number)
+      },
+      {
+        key: 'is_lock',
+        fuc: (v) => genderCheck(v as number)
+      },
+      {
+        key: 'is_block_stranger',
+        fuc: (v) => genderCheck(v as number)
+      },
+      {
+        key: 'is_busy',
+        fuc: (v) => genderCheck(v as number)
+      }
+    ]
+  })
+
+  uploadUser.upload(req as any, res as any, async () => {
+    if (req?.fileValidationError) {
+      return req.errorFuc({
+        msg: 'File không đúng địng dạng'
+      })
+    }
+
+    let oldAvatar = ''
+
+    if (req?.file?.filename) {
+      const result = await getOneShared<userData>({
+        table: TableUser,
+        select: 'avatar',
+        data: [id],
+        where: 'id=?'
+      })
+      if (result?.avatar) {
+        oldAvatar = result?.avatar
+      }
+      update.push('avatar')
+      newDataRequest.push(req.file.filename)
+    }
+
+    if (update?.length > 0) {
+      const isSuccess = await UpdatedShared({
+        table: TableUser,
+        select: update,
+        values: [...newDataRequest, id],
+        where: 'id=?'
+      })
+
+      if (isSuccess) {
+        if (req?.file?.filename) {
+          const isDefaultAvatar = checkAvatarDefault(oldAvatar)
+          const BASE_URL_ROOT = path.join(req.getDirRoot(), 'images', `user-${id}`)
+          if (!isDefaultAvatar) {
+            unlinkFile(path.join(BASE_URL_ROOT, oldAvatar))
+          }
+        }
+
+        return req.successOke({
+          msg: 'Cập nhật thành công'
+        })
+      }
+
+      return req.errorFuc({
+        msg: 'Lỗi không xác định'
+      })
+    } else {
+      return req.successOke({
+        msg: 'Cập nhật thành công'
+      })
+    }
+  })
+}
+
+export { loadFriends, getMe, unFriend, updateMe }

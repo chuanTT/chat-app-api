@@ -16,6 +16,17 @@ const defaultAvatarGender = (gender: number) => {
   return avatar
 }
 
+const checkAvatarDefault = (slug?: string) => {
+  const newDefault = [...defaultAvatar].reduce((t, c) => {
+    return [...t, ...c]
+  }, [])
+  let isAvatarDefault = false
+  if (newDefault?.includes(slug ?? '')) {
+    isAvatarDefault = true
+  }
+  return isAvatarDefault
+}
+
 const checkPathDefault = (slug?: string) => {
   const newDefault = [...defaultAvatar].reduce((t, c) => {
     return [...t, ...c]
@@ -32,4 +43,4 @@ const checkPathDefault = (slug?: string) => {
   return url
 }
 
-export { defaultAvatarGender, checkPathDefault }
+export { defaultAvatarGender, checkPathDefault, checkAvatarDefault }

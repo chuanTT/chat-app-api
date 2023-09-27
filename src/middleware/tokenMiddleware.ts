@@ -61,7 +61,6 @@ const verifyToken = async (req: any, res: Response, next: NextFunction) => {
 
     if (result?.id) {
       req.data = result
-      req.token = token
       next()
     } else {
       return req.errorFuc({

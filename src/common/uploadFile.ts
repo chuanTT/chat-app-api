@@ -3,10 +3,12 @@ import path from 'path'
 import multer from 'multer'
 // const multer = require('multer')
 
-const storageFile = (folder = 'images') => {
+const storageFile = (folder = 'temp') => {
   const storage = multer.diskStorage({
     destination: function (req: any, file, cb) {
-      cb(null, path.join(req?.getDirRoot(), `${folder}`))
+      const pathDir = path.join(req?.getDirRoot(), `${folder}`)
+      checkPathCreateFolder(pathDir)
+      cb(null, pathDir)
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
@@ -30,7 +32,7 @@ const imageFilter = function (req: any, file: any, cb: any) {
 const uploadFile = ({
   name,
   isMutile = false,
-  pathRoot = 'images',
+  pathRoot = 'temp',
   countFile = 2,
   validateFilterFile = imageFilter
 }: uploadFileType) => {
@@ -54,12 +56,11 @@ const uploadFile = ({
   }
 }
 
-const unlinkFile = async (nameFile: string, DIR_ROOT = '', folder = 'images') => {
+const unlinkFile = async (pathFile: string) => {
   let isChecking = false
-  const pathRoot = path.join(DIR_ROOT, `${folder}/${nameFile}`)
 
-  if (fs.existsSync(pathRoot)) {
-    fs.unlinkSync(pathRoot)
+  if (fs.existsSync(pathFile)) {
+    fs.unlinkSync(pathFile)
     isChecking = true
   } else {
     isChecking = false
@@ -68,4 +69,26 @@ const unlinkFile = async (nameFile: string, DIR_ROOT = '', folder = 'images') =>
   return isChecking
 }
 
-export { storageFile, uploadFile, unlinkFile }
+const checkPathCreateFolder = (path: string) => {
+  let error = false
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path, { recursive: true })
+    error = true
+  }
+
+  return error
+}
+
+const copyFile = (path: string, pathCopy: string) => {
+  let err = false
+  try {
+    fs.copyFileSync(path, pathCopy)
+    unlinkFile(path)
+  } catch {
+    err = false
+  }
+
+  return err
+}
+
+export { storageFile, uploadFile, unlinkFile, checkPathCreateFolder, copyFile }

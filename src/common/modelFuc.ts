@@ -120,7 +120,39 @@ const getFormat = (dateString = '') => {
   return `${y}-${m}-${day}`
 }
 
-const genderCheck = (gerder: number) => (gerder === 1 ? 1 : 0)
+const genderCheck = (gerder: number) => (gerder === 0 ? 0 : 1)
+
+const checkValueResquest = ({
+  obj,
+  allowKey
+}: {
+  obj: { [key: string]: any }
+  allowKey: (string | { key: string; fuc: (v: string | number) => string | number })[]
+}) => {
+  const update: string[] = []
+  const data: (string | number)[] = []
+
+  if (allowKey.length > 0) {
+    allowKey.forEach((key) => {
+      if (typeof key === 'string') {
+        if (obj?.[key] || typeof obj?.[key] === 'number') {
+          update.push(key)
+          data.push(obj?.[key])
+        }
+      } else {
+        if (obj?.[key?.key] || typeof obj?.[key?.key] === 'number') {
+          update.push(key?.key)
+          data.push(key?.fuc?.(obj?.[key?.key]) || obj?.[key?.key])
+        }
+      }
+    })
+  }
+
+  return {
+    update,
+    data
+  }
+}
 
 export {
   appendValues,
@@ -130,5 +162,6 @@ export {
   convertViToEn,
   aliasConvert,
   getFormat,
-  genderCheck
+  genderCheck,
+  checkValueResquest
 }

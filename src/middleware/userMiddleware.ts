@@ -1,4 +1,6 @@
 import { isEmptyObj } from '@/common/function'
+import { uploadFile } from '@/common/uploadFile'
+import { isNumber, isRequired } from '@/common/validate'
 import { TableUser, getOneShared } from '@/model/shared.model'
 import { NextFunction, Response } from 'express'
 
@@ -60,4 +62,34 @@ const middlewareUserFieldExist = ({
   }
 }
 
-export { middlewareUserExist, middlewareUserFieldExist }
+const configUserRequest: configValidateType = {
+  full_name: {
+    rules: [isRequired],
+    msg: {
+      isRequired: 'Họ và tên không được để trống'
+    },
+    isDisableKey: true
+  },
+
+  birthday: {
+    rules: [isRequired],
+    msg: {
+      isRequired: 'Ngày sinh không được để trống'
+    },
+    isDisableKey: true
+  },
+
+  gender: {
+    rules: [isRequired, isNumber],
+    msg: {
+      isRequired: 'Giới tính được để trống'
+    },
+    isDisableKey: true
+  }
+}
+
+const uploadUser = uploadFile({
+  name: 'avatar'
+})
+
+export { middlewareUserExist, middlewareUserFieldExist, configUserRequest, uploadUser }

@@ -15,10 +15,10 @@ declare global {
 
   interface uploadFileType {
     name: string
-    isMutile: boolean
-    pathRoot: string
-    countFile: number
-    validateFilterFile: any
+    isMutile?: boolean
+    pathRoot?: string
+    countFile?: number
+    validateFilterFile?: any
   }
 
   interface configValidateValueType {
@@ -35,6 +35,7 @@ declare global {
   }
 
   interface NewResquest extends Express.Request, Request {
+    fileValidationError?: any
     query?: any
     body?: any
     params?: any
