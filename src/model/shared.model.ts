@@ -1,4 +1,4 @@
-import { appendValues, PathImages, updateSelect } from '@/common/modelFuc'
+import { appendValues, joinUrl, PathImages, updateSelect } from '@/common/modelFuc'
 import pagination from './pagination.model'
 import pool from '@/config/db'
 
@@ -34,6 +34,8 @@ const getOneShared = async <T>({
   data,
   isImages,
   BASE_URL = '',
+  keyFolder = 'username',
+  folder = '',
   key = 'avatar'
 }: getSharedType): Promise<T> => {
   let result: any = {}
@@ -45,7 +47,18 @@ const getOneShared = async <T>({
     )
 
     if (Array?.isArray(row) && row?.length > 0) {
-      result = (isImages ? PathImages({ data: row[0] as typeObject, key, BASE_URL }) : row[0]) as T
+      const newRow = row[0] as typeObject
+      result = (
+        isImages
+          ? PathImages({
+              data: newRow,
+              key,
+              BASE_URL,
+              keyFolder,
+              folder
+            })
+          : newRow
+      ) as T
     }
   } catch (err) {
     console.log(err)
@@ -63,6 +76,8 @@ const getShared = async <T>({
   key = 'avatar',
   BASE_URL = '',
   table = '',
+  keyFolder = '',
+  folder = '',
   isWhere = false
 }: getSharedType): Promise<T[]> => {
   let result: T[] = []
@@ -74,7 +89,7 @@ const getShared = async <T>({
     )
 
     if (Array?.isArray(row) && row?.length > 0) {
-      result = (isImages ? PathImages({ data: row, key, BASE_URL }) : row) as T[]
+      result = (isImages ? PathImages({ data: row, key, BASE_URL, keyFolder, folder }) : row) as T[]
     }
   } catch (err) {
     console.log(err)

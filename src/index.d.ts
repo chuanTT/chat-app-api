@@ -101,6 +101,8 @@ declare global {
     BASE_URL?: string
     table?: string
     isWhere?: boolean
+    keyFolder?: string
+    folder?: string
   }
 
   interface userData {
@@ -140,5 +142,16 @@ declare global {
     count_block_id?: number
     is_deleted?: number
     count_deleted_id?: number
+  }
+
+  interface resultRoomDetail {
+    id?: number
+    room_id?: number
+    owner_id?: number
+    messeage?: string
+    is_media?: string | number
+    is_edit?: string | number
+    created_at?: string
+    updated_at?: string
   }
 }

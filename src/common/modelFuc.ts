@@ -1,4 +1,4 @@
-import { checkPathDefault } from './default'
+import { checkAvatarDefault, checkPathDefault } from './default'
 
 // services
 const appendValues = (num: number, link = '?') => {
@@ -43,11 +43,15 @@ const joinUrl = (dir?: string, BASE_URL: string = '/', link = '/') => {
 const PathImages = ({
   data = [],
   key = 'avatar',
-  BASE_URL = ''
+  BASE_URL = '',
+  keyFolder = '',
+  folder = ''
 }: {
   data: any[] | typeObject
   key: string
   BASE_URL: string
+  keyFolder?: string
+  folder?: string
 }) => {
   let result: any[] | typeObject = []
 
@@ -55,7 +59,18 @@ const PathImages = ({
     result = data.map((item: typeObject) => {
       // eslint-disable-next-line no-prototype-builtins
       if (item?.hasOwnProperty(key)) {
-        const slug = checkPathDefault(item[key] as string)
+        const isDefault = checkAvatarDefault(item[key] as string)
+        let slug = ''
+        if (isDefault) {
+          slug = checkPathDefault(item[key] as string)
+        } else {
+          slug = keyFolder
+            ? joinUrl(
+                item[key] as string,
+                folder ? `${folder}${item[keyFolder]}` : (item[keyFolder] as string)
+              )
+            : (item[key] as string)
+        }
         item[key] = joinUrl(slug, BASE_URL)
       }
       return item
@@ -65,7 +80,18 @@ const PathImages = ({
     if (typeof data === 'object' && !Array.isArray(data)) {
       // eslint-disable-next-line no-prototype-builtins
       if (newData?.hasOwnProperty(key)) {
-        const slug = checkPathDefault(newData[key] as string)
+        const isDefault = checkAvatarDefault(newData[key] as string)
+        let slug = ''
+        if (isDefault) {
+          slug = checkPathDefault(newData[key] as string)
+        } else {
+          slug = keyFolder
+            ? joinUrl(
+                newData[key] as string,
+                folder ? `${folder}${newData[keyFolder]}` : (newData[keyFolder] as string)
+              )
+            : (newData[key] as string)
+        }
         newData[key] = joinUrl(slug, BASE_URL)
       }
     }

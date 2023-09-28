@@ -29,7 +29,7 @@ app.use(function (req, _res, next) {
     const url = `${proto}://${req.get('host')}`
     return url
   }
-  req.getUrlPublic = function (folder = 'images') {
+  req.getUrlPublic = function (folder = 'avatar') {
     return joinUrl(folder ?? '/', req.getUrl())
   }
 

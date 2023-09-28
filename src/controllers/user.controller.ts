@@ -20,7 +20,7 @@ const loadFriends = async (req: NewResquest) => {
     select: '*',
     table: TableFriend,
     where: 'owner_id = ? OR friend_id = ?',
-    variable: [id]
+    variable: [id, id]
   })
 
   if (result?.data?.length > 0) {
@@ -97,7 +97,7 @@ const getMe = async (req: NewResquest) => {
 }
 
 const updateMe = async (req: NewResquest, res: Express.Response) => {
-  const { id } = req.data
+  const { id, username } = req.data
   const { update, data: newDataRequest } = checkValueResquest({
     obj: req.body,
     allowKey: [
@@ -156,7 +156,7 @@ const updateMe = async (req: NewResquest, res: Express.Response) => {
       if (isSuccess) {
         if (req?.file?.filename) {
           const isDefaultAvatar = checkAvatarDefault(oldAvatar)
-          const BASE_URL_ROOT = path.join(req.getDirRoot(), 'images', `user-${id}`)
+          const BASE_URL_ROOT = path.join(req.getDirRoot(), 'avatar', `${username}`)
           checkPathCreateFolder(BASE_URL_ROOT)
           if (!isDefaultAvatar) {
             unlinkFile(path.join(BASE_URL_ROOT, oldAvatar))

@@ -268,4 +268,89 @@ const blockRoom = async (req: NewResquest) => {
   })
 }
 
-export { loadRoom, checkRoom, deleteRoom, blockRoom }
+const loadRoomDetails = async (req: NewResquest) => {
+  const { id } = req.data
+  const { id: room_id, owner_id, friend_id } = req.existData as resultRoom
+
+  if (friend_id === id || owner_id === id) {
+    const checkRoomBlock = await getOneShared<resultRoomSettings>({
+      select: 'is_block, count_block_id, is_deleted, count_deleted_id',
+      where: 'room_id=? AND owner_id = ?',
+      table: TableRoomSettings,
+      data: [room_id, id]
+    })
+
+    let where = 'room_id = ?'
+    const data: (string | number)[] = [room_id ?? 0]
+
+    if (checkRoomBlock?.is_block === 1) {
+      where += ' AND id <= ?'
+      data.push(checkRoomBlock?.count_block_id ?? 0)
+    }
+
+    if (checkRoomBlock?.is_deleted === 1) {
+      where += ' AND id > ?'
+      data.push(checkRoomBlock?.count_deleted_id ?? 0)
+    }
+
+    const messeage = await getSharedPagination<resultRoomDetail>({
+      table: TableRoomDetails,
+      select: 'id, room_id, owner_id, messeage, is_media, is_edit, created_at, updated_at',
+      where: `${where} ORDER BY id DESC`,
+      variable: data
+    })
+
+    if (messeage?.data?.length > 0) {
+      const newData = await awaitAll<resultRoomDetail, any>(messeage?.data, async (item) => {
+        const { owner_id, created_at, updated_at, is_media, ...spread } = item
+
+        let list_media: any[] = []
+
+        if (Number(is_media) === 1) {
+          list_media = await getShared<any>({
+            select: '*',
+            BASE_URL: req.getUrlPublic('media'),
+            isImages: true,
+            data: [spread.id],
+            where: 'id_messeage=?',
+            keyFolder: 'id',
+            folder: 'room-',
+            table: TableMediaList,
+            key: 'media'
+          })
+        }
+
+        const newResultUser = await getOneShared<userData>({
+          table: TableUser,
+          select: 'id, full_name, username, avatar',
+          BASE_URL: req.getUrlPublic(),
+          isImages: true,
+          where: 'id=?',
+          data: [owner_id]
+        })
+
+        return {
+          ...spread,
+          user: newResultUser,
+          list_media,
+          created_at,
+          updated_at
+        }
+      })
+
+      messeage.data = newData
+      console.log('oke')
+    }
+
+    return req.successOke({
+      msg: 'Lấy dữ liệu thành công',
+      data: messeage
+    })
+  }
+
+  return req.errorFuc({
+    msg: 'Lỗi không xác định'
+  })
+}
+
+export { loadRoom, checkRoom, deleteRoom, blockRoom, loadRoomDetails }
