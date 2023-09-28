@@ -6,6 +6,9 @@ const TableUser = 'users'
 const TableInvitation = 'invitation'
 const TableFriend = 'friend'
 const TableRoom = 'room'
+const TableRoomSettings = 'room_setting'
+const TableRoomDetails = 'room_details'
+const TableMediaList = 'media_list'
 
 const getSharedPagination = async <T>({
   select = '*',
@@ -157,5 +160,8 @@ export {
   TableUser,
   TableInvitation,
   TableFriend,
-  TableRoom
+  TableRoom,
+  TableRoomSettings,
+  TableRoomDetails,
+  TableMediaList
 }

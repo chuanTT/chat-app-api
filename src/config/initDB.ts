@@ -114,7 +114,19 @@ const initTable = {
       }
     },
     is_block: {
-      type: 'varchar(1)',
+      type: 'int(1)',
+      default: '0'
+    },
+    count_block_id: {
+      type: 'int',
+      default: '0'
+    },
+    is_deleted: {
+      type: 'int(1)',
+      default: '0'
+    },
+    count_deleted_id: {
+      type: 'int',
       default: '0'
     }
   },

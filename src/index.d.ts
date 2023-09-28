@@ -125,4 +125,20 @@ declare global {
     friend_id: number
     created_at?: string
   }
+
+  interface resultRoom {
+    id?: number
+    owner_id?: number
+    friend_id?: number
+    created_at?: string
+  }
+
+  interface resultRoomSettings {
+    owner_id?: number
+    room_id?: number
+    is_block?: number
+    count_block_id?: number
+    is_deleted?: number
+    count_deleted_id?: number
+  }
 }

@@ -7,6 +7,7 @@ declare namespace Express {
     errorFuc: (obj: { msg: string; data?: any; code?: number }) => any
     data: userData
     BASE_URL?: string
+    existData?: any
     file?: {
       fieldname: string
       originalname: string
