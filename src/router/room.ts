@@ -6,6 +6,7 @@ import {
   chatMesseage,
   checkRoom,
   deleteRoom,
+  editMesseage,
   loadRoom,
   loadRoomDetails
 } from '@/controllers/room.controller'
@@ -16,8 +17,11 @@ import { middlewareUserFieldExist } from '@/middleware/userMiddleware'
 import {
   configRoomRequest,
   middlewareSharedFieldExist,
-  uploadMedia
+  uploadMedia,
+  configRoomBlock,
+  configRoomMeseage
 } from '@/middleware/room.middleware'
+import { TableRoomDetails } from '@/model/shared.model'
 
 router.get('/', verifyToken, loadRoom)
 router.get(
@@ -27,6 +31,22 @@ router.get(
   middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
   loadRoomDetails
 )
+
+router.patch(
+  '/:id',
+  verifyToken,
+  validateResquest({ ...configIDRequest, ...configRoomMeseage }),
+  middlewareSharedFieldExist({
+    key: 'id',
+    field: 'id, owner_id, room_id, is_media',
+    whereField: 'id=? AND is_media = 0',
+    table: TableRoomDetails,
+    msg: 'Lỗi không xác định',
+    code: 400
+  }),
+  editMesseage
+)
+
 router.post(
   '/chat',
   verifyToken,
@@ -46,9 +66,9 @@ router.post(
 )
 
 router.post(
-  '/block',
+  '/toggle-block',
   verifyToken,
-  validateResquest(configRoomRequest),
+  validateResquest({ ...configRoomRequest, ...configRoomBlock }),
   middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
   blockRoom
 )

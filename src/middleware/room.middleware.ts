@@ -14,16 +14,39 @@ const configRoomRequest: configValidateType = {
   }
 }
 
+const configRoomMeseage: configValidateType = {
+  messeage: {
+    rules: [isRequired],
+    msg: {
+      isRequired: 'Meseage không được để trống'
+    }
+  }
+}
+
+const configRoomBlock: configValidateType = {
+  is_block: {
+    rules: [isRequired, isNumber],
+    msg: {
+      isRequired: 'không được để trống',
+      isNumber: 'phải là số'
+    }
+  }
+}
+
 const middlewareSharedFieldExist = ({
   field = 'id',
   key = 'id',
   whereField = 'id = ?',
-  table = TableRoom
+  table = TableRoom,
+  msg = 'Không tồn tại',
+  code = 422
 }: {
   field?: string
   key?: string
   whereField?: string
   table?: string
+  msg?: string
+  code?: number
 }) => {
   return async (req: any, res: Response, next: NextFunction) => {
     const dataDynamic = { ...req.body, ...req.query, ...req.params }
@@ -40,8 +63,8 @@ const middlewareSharedFieldExist = ({
       return next()
     } else {
       return (req as NewResquest).errorFuc({
-        msg: 'Không tồn tại',
-        code: 422
+        msg,
+        code
       })
     }
   }
@@ -51,4 +74,10 @@ const uploadMedia = uploadFile({
   name: 'media'
 })
 
-export { configRoomRequest, middlewareSharedFieldExist, uploadMedia }
+export {
+  configRoomRequest,
+  middlewareSharedFieldExist,
+  uploadMedia,
+  configRoomBlock,
+  configRoomMeseage
+}

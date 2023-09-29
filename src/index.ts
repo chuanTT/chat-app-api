@@ -10,6 +10,7 @@ import { responsiveFuc } from './middleware/responsive.middleware'
 import { joinUrl } from './common/modelFuc'
 import router from './router'
 import { verifyTokenSocket } from './middleware/tokenMiddleware'
+import { TableRoom, getOneShared } from './model/shared.model'
 
 const app = express()
 const PORT = process.env.PORT
@@ -77,7 +78,19 @@ io.use(async (socket, next) => {
 })
 
 io.on('connection', (socket) => {
-  console.log(socket.data)
+  socket.on('private_room', async (data) => {
+    const { id } = socket.data
+    const checkRoom = await getOneShared<resultRoom>({
+      select: 'id, owner_id, friend_id',
+      table: TableRoom,
+      where: 'id=?',
+      data: [data?.room]
+    })
+
+    if (id === checkRoom?.owner_id || id === checkRoom?.friend_id) {
+      socket.join(`room-${checkRoom.id}`)
+    }
+  })
 })
 
 server.listen(PORT)

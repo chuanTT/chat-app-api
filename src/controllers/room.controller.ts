@@ -232,9 +232,11 @@ const deleteRoom = async (req: NewResquest) => {
 
 const blockRoom = async (req: NewResquest) => {
   const { id } = req.data
+  let { is_block } = req.body
   const { id: room_id, friend_id, owner_id } = req?.existData as resultRoom
 
   if (id === friend_id || id === owner_id) {
+    is_block = genderCheck(Number(is_block))
     const checkRoomBlock = await getOneShared<resultRoomSettings>({
       select: 'owner_id, is_block, count_block_id',
       where: 'room_id=? AND owner_id = ?',
@@ -243,23 +245,33 @@ const blockRoom = async (req: NewResquest) => {
     })
 
     if (checkRoomBlock) {
-      const lastMesseage = await getOneShared<any>({
-        table: TableRoomDetails,
-        select: 'id',
-        where: 'room_id = ? ORDER BY updated_at DESC',
-        data: [room_id]
-      })
+      const obj = {
+        is_block: 0,
+        count_block_id: 0
+      }
+
+      if (Number(is_block) === 1) {
+        const lastMesseage = await getOneShared<any>({
+          table: TableRoomDetails,
+          select: 'id',
+          where: 'room_id = ? ORDER BY updated_at DESC',
+          data: [room_id]
+        })
+
+        obj.is_block = 1
+        obj.count_block_id = lastMesseage?.id ?? 0
+      }
 
       const updateRoomSettings = await UpdatedShared({
         table: TableRoomSettings,
         select: ['is_block', 'count_block_id'],
-        values: [1, lastMesseage?.id ?? 0, room_id, id],
+        values: [obj.is_block, obj.count_block_id, room_id ?? 0, id],
         where: 'room_id=? AND owner_id=?'
       })
 
       if (updateRoomSettings) {
         return req.successOke({
-          msg: 'Block thành công'
+          msg: obj?.is_block === 1 ? 'Block thành công' : 'Gỡ block thành công'
         })
       }
     }
@@ -466,7 +478,7 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
                   }
                 }
 
-                global.socketServer.emit('oke', obj)
+                global.socketServer.sockets.in(`room-${room_id}`).emit('messeage', obj)
               }
 
               return req.successOke({
@@ -486,4 +498,63 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
   })
 }
 
-export { loadRoom, checkRoom, deleteRoom, blockRoom, loadRoomDetails, chatMesseage }
+const editMesseage = async (req: NewResquest, res: Express.Response) => {
+  const { messeage } = req.body
+  const { id } = req.data
+  const { id: messeage_id, owner_id, room_id } = req.existData as resultRoomDetail
+
+  if (id === owner_id) {
+    const resultSettings = await getShared<resultRoomSettings>({
+      select: 'owner_id, is_block',
+      table: TableRoomSettings,
+      where: 'room_id=?',
+      data: [room_id]
+    })
+
+    if (resultSettings) {
+      const ownerData = resultSettings?.find((item) => item?.owner_id === id)
+
+      if (ownerData) {
+        const friendData = resultSettings?.find((item) => item?.owner_id !== id)
+
+        const isUpdated = await UpdatedShared({
+          select: ['messeage', 'is_edit'],
+          table: TableRoomDetails,
+          where: 'id = ?',
+          values: [messeage, 1, messeage_id]
+        })
+
+        if (isUpdated) {
+          if (friendData?.is_block === 0) {
+            const newResultUser = await getOneShared<userData>({
+              table: TableUser,
+              select: 'id, full_name, username, avatar',
+              BASE_URL: req.getUrlPublic(),
+              isImages: true,
+              where: 'id=?',
+              data: [owner_id]
+            })
+
+            global.socketServer.sockets.in(`room-${room_id}`).emit('update-messeage', {
+              id: messeage_id,
+              messeage,
+              is_edit: 1,
+              user: newResultUser,
+              updated_at: Date.now()
+            })
+          }
+
+          return req.successOke({
+            msg: 'Chỉnh sửa tin nhắn thành công'
+          })
+        }
+      }
+    }
+  }
+
+  return req.errorFuc({
+    msg: 'Lỗi không xác định'
+  })
+}
+
+export { loadRoom, checkRoom, deleteRoom, blockRoom, loadRoomDetails, chatMesseage, editMesseage }

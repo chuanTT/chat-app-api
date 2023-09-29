@@ -21,17 +21,15 @@
         }
       })
       const from = new FormData()
-      // from.append('room_id', 1)
+      from.append('room_id', 1)
       from.append('messeage', 'user 1')
 
-      fetch('http://localhost:3005/api/v1/room/1', {
-        method: 'GET',
+      fetch('http://localhost:3005/api/v1/room/chat', {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`
         },
-        body: {
-          messeage: 'chuan'
-        }
+        body: from
       })
 
       socket.emit('private_room', { room: 1 })
@@ -40,9 +38,9 @@
         console.log(data)
       })
 
-      socket.on('update-messeage', (data) => {
-        console.log(data)
-      })
+      // socket.on('oke', (data) => {
+      //   console.log(data)
+      // })
     </script>
   </body>
 </html>
