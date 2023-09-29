@@ -30,6 +30,40 @@ const getTokenFuc = (req: any): string => {
   return token
 }
 
+const verifyTokenSocket = async (token: string): Promise<returnVerifyTokenSocket> => {
+  const result: returnVerifyTokenSocket = {
+    isVerify: false,
+    data: {
+      id: 0,
+      username: ''
+    }
+  }
+
+  try {
+    const data: any = verifyTokenFuc(token)
+    if (!isEmptyObj(data)) {
+      const { id } = data
+      const resultDB = await getOneShared<userData>({
+        select: 'id, username, full_name, birthday',
+        where: 'id=? AND token=?',
+        data: [id, token],
+        key: 'avatar',
+        table: TableUser
+      })
+
+      if (resultDB?.id) {
+        result.isVerify = true
+        result.data = resultDB
+      }
+    }
+    return result
+  } catch (err) {
+    result.isVerify = false
+  }
+
+  return result
+}
+
 const verifyToken = async (req: any, res: Response, next: NextFunction) => {
   const token = getTokenFuc(req)
 
@@ -76,4 +110,4 @@ const verifyToken = async (req: any, res: Response, next: NextFunction) => {
   }
 }
 
-export { createToken, verifyTokenFuc, verifyToken }
+export { createToken, verifyTokenFuc, verifyToken, verifyTokenSocket }

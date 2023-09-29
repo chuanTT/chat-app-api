@@ -1,4 +1,5 @@
 import { isEmptyObj } from '@/common/function'
+import { uploadFile } from '@/common/uploadFile'
 import { isNumber, isRequired } from '@/common/validate'
 import { TableRoom, getOneShared } from '@/model/shared.model'
 import { NextFunction, Response } from 'express'
@@ -46,4 +47,8 @@ const middlewareSharedFieldExist = ({
   }
 }
 
-export { configRoomRequest, middlewareSharedFieldExist }
+const uploadMedia = uploadFile({
+  name: 'media'
+})
+
+export { configRoomRequest, middlewareSharedFieldExist, uploadMedia }

@@ -154,4 +154,9 @@ declare global {
     created_at?: string
     updated_at?: string
   }
+
+  interface returnVerifyTokenSocket {
+    isVerify: boolean
+    data: userData
+  }
 }

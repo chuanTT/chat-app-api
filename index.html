@@ -9,7 +9,29 @@
     <div></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js" integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        const socket = io('http://localhost:3005/');
+      const token = localStorage.getItem('token')
+        const socket = io('http://localhost:3005/', {
+          auth: {
+            token
+          }
+        });
+        const from = new FormData()
+        from.append('room_id', 1)
+        from.append('messeage', "dinh chuan")
+
+        fetch('http://localhost:3005/api/v1/room/chat', {
+          method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: from
+        })
+
+        socket.on('oke', (data) => {
+           console.log(data)
+            })
+
+       
     </script>
 </body>
 </html>

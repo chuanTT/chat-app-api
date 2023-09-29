@@ -1,5 +1,7 @@
 import { awaitAll } from '@/common/function'
-import { unlinkFile } from '@/common/uploadFile'
+import { checkValueResquest, genderCheck } from '@/common/modelFuc'
+import { checkPathCreateFolder, copyFileCustom, unlinkFile } from '@/common/uploadFile'
+import { uploadMedia } from '@/middleware/room.middleware'
 import {
   DeleteSharedForce,
   InsertShared,
@@ -339,7 +341,6 @@ const loadRoomDetails = async (req: NewResquest) => {
       })
 
       messeage.data = newData
-      console.log('oke')
     }
 
     return req.successOke({
@@ -353,4 +354,136 @@ const loadRoomDetails = async (req: NewResquest) => {
   })
 }
 
-export { loadRoom, checkRoom, deleteRoom, blockRoom, loadRoomDetails }
+const chatMesseage = async (req: NewResquest, res: Express.Response) => {
+  const { id } = req.data
+  const { messeage } = req.body
+  const { id: room_id, owner_id, friend_id } = req.existData as resultRoom
+  uploadMedia.upload(req as any, res as any, async () => {
+    if (req?.fileValidationError) {
+      return req.errorFuc({
+        msg: 'File không đúng địng dạng'
+      })
+    }
+
+    if (owner_id === id || friend_id === id) {
+      const checkRoom = await getShared<resultRoomSettings>({
+        select: 'owner_id, is_block',
+        where: 'room_id=?',
+        table: TableRoomSettings,
+        data: [room_id]
+      })
+
+      if (checkRoom?.length > 0) {
+        const ownerData = checkRoom?.find((item) => item?.owner_id === id)
+        if (ownerData && ownerData?.is_block === 0) {
+          const friendData = checkRoom?.find((item) => item?.owner_id !== id)
+
+          const { update, data: newDataRequest } = checkValueResquest({
+            obj: { messeage, room_id, owner_id: id },
+            allowKey: [
+              'messeage',
+              'room_id',
+              'owner_id',
+              {
+                key: 'is_media',
+                fuc: () => (req?.file?.filename ? 1 : 0)
+              }
+            ]
+          })
+
+          if (update?.length > 0) {
+            const result = await InsertShared({
+              updated: update.join(','),
+              table: TableRoomDetails,
+              data: newDataRequest
+            })
+
+            if (result?.isCheck) {
+              if (req?.file?.filename) {
+                const isMedia = await InsertShared({
+                  updated: 'id_messeage, media',
+                  table: TableMediaList,
+                  data: [result?.id, req?.file?.filename]
+                })
+
+                if (isMedia?.isCheck) {
+                  const BASE_URL_ROOT = path.join(req.getDirRoot(), 'media', `room-${room_id}`)
+                  checkPathCreateFolder(BASE_URL_ROOT)
+                  copyFileCustom(req?.file?.path, path.join(BASE_URL_ROOT, req.file.filename))
+                }
+              }
+
+              if (friendData?.is_block === 0) {
+                let obj: any = {}
+                const newMesseage = await getOneShared<resultRoomDetail>({
+                  select:
+                    'id, room_id, owner_id, messeage, is_media, is_edit, created_at, updated_at',
+                  table: TableRoomDetails,
+                  where: 'id=?',
+                  data: [result?.id]
+                })
+
+                if (newMesseage?.id) {
+                  const {
+                    is_media,
+                    created_at,
+                    updated_at,
+                    owner_id: LastMsgOneId,
+                    ...spread
+                  } = newMesseage
+                  let list_media: any[] = []
+
+                  if (Number(is_media) === 1) {
+                    list_media = await getShared<any>({
+                      select: '*',
+                      BASE_URL: req.getUrlPublic('media'),
+                      isImages: true,
+                      data: [newMesseage.id],
+                      where: 'id_messeage=?',
+                      keyFolder: 'id',
+                      folder: 'room-',
+                      table: TableMediaList,
+                      key: 'media'
+                    })
+                  }
+
+                  const newResultUser = await getOneShared<userData>({
+                    table: TableUser,
+                    select: 'id, full_name, username, avatar',
+                    BASE_URL: req.getUrlPublic(),
+                    isImages: true,
+                    where: 'id=?',
+                    data: [LastMsgOneId]
+                  })
+
+                  obj = {
+                    ...obj,
+                    ...spread,
+                    user: newResultUser,
+                    list_media,
+                    created_at,
+                    updated_at
+                  }
+                }
+
+                global.socketServer.emit('oke', obj)
+              }
+
+              return req.successOke({
+                msg: 'Gửi tin nhắn thành công'
+              })
+            }
+          }
+        }
+      }
+    }
+
+    req?.file?.filename && unlinkFile(req?.file?.path)
+
+    return req.errorFuc({
+      msg: 'Lỗi không xác định'
+    })
+  })
+}
+
+export { loadRoom, checkRoom, deleteRoom, blockRoom, loadRoomDetails, chatMesseage }

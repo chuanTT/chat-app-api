@@ -305,9 +305,9 @@ const pool = mysql.createPool({
   try {
     await pool.query(`USE chuandinh`)
     await pool.query(`DROP DATABASE chuandinh`)
-    await pool.query(`CREATE DATABASE chuandinh /*!40100 COLLATE 'utf8_unicode_ci' */`)
+    await pool.query(`CREATE DATABASE chuandinh /*!40100 COLLATE 'utf8_general_ci' */`)
   } catch {
-    await pool.query(`CREATE DATABASE chuandinh /*!40100 COLLATE 'utf8_unicode_ci' */`)
+    await pool.query(`CREATE DATABASE chuandinh /*!40100 COLLATE 'utf8_general_ci' */`)
   } finally {
     await pool.query(`USE chuandinh`)
     const arrKey = Object.keys(initTable)

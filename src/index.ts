@@ -5,9 +5,11 @@ import helmet from 'helmet'
 import path from 'node:path'
 import http from 'http'
 import { Server } from 'socket.io'
+import cors from 'cors'
 import { responsiveFuc } from './middleware/responsive.middleware'
 import { joinUrl } from './common/modelFuc'
 import router from './router'
+import { verifyTokenSocket } from './middleware/tokenMiddleware'
 
 const app = express()
 const PORT = process.env.PORT
@@ -20,6 +22,8 @@ app.use(
     crossOriginResourcePolicy: false
   })
 )
+
+app.use(cors())
 
 app.use(express.static('src/public'))
 
@@ -61,8 +65,19 @@ const io = new Server(server, {
 })
 global.socketServer = io
 
+io.use(async (socket, next) => {
+  const token = socket.handshake?.auth?.token
+  if (token) {
+    const result = await verifyTokenSocket(token)
+    if (result?.isVerify) {
+      socket.data = result.data
+      next()
+    }
+  }
+})
+
 io.on('connection', (socket) => {
-  console.log(socket.id)
+  console.log(socket.data)
 })
 
 server.listen(PORT)
