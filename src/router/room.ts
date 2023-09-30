@@ -12,7 +12,7 @@ import {
 } from '@/controllers/room.controller'
 import { verifyToken } from '@/middleware/tokenMiddleware'
 import { validateResquest } from '@/middleware/validateResquest'
-import { configIDRequest } from '@/middleware/shared.middleware'
+import { configGetShared, configIDRequest } from '@/middleware/shared.middleware'
 import { middlewareUserFieldExist } from '@/middleware/userMiddleware'
 import {
   configRoomRequest,
@@ -23,11 +23,11 @@ import {
 } from '@/middleware/room.middleware'
 import { TableRoomDetails } from '@/model/shared.model'
 
-router.get('/', verifyToken, loadRoom)
+router.get('/', verifyToken, validateResquest(configGetShared), loadRoom)
 router.get(
   '/:room_id',
   verifyToken,
-  validateResquest(configRoomRequest),
+  validateResquest({ ...configRoomRequest, ...configGetShared }),
   middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
   loadRoomDetails
 )

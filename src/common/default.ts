@@ -43,4 +43,16 @@ const checkPathDefault = (slug?: string) => {
   return url
 }
 
-export { defaultAvatarGender, checkPathDefault, checkAvatarDefault }
+const pathFullCheck = (file?: string, pathFull?: string, BASE_URL?: string) => {
+  const isDefault = checkAvatarDefault(file)
+  let slug = ''
+  if (isDefault) {
+    slug = checkPathDefault(file)
+  } else {
+    slug = joinUrl(file, pathFull)
+  }
+  slug = joinUrl(slug, BASE_URL)
+  return slug
+}
+
+export { defaultAvatarGender, checkPathDefault, checkAvatarDefault, pathFullCheck }

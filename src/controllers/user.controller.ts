@@ -1,6 +1,7 @@
-import { checkAvatarDefault } from '@/common/default'
+import { filterBuilder } from '@/common/FilterFuc'
+import { checkAvatarDefault, pathFullCheck } from '@/common/default'
 import { awaitAll } from '@/common/function'
-import { checkValueResquest, genderCheck } from '@/common/modelFuc'
+import { checkValueResquest, genderCheck, joinUrl } from '@/common/modelFuc'
 import { checkPathCreateFolder, copyFileCustom, unlinkFile } from '@/common/uploadFile'
 import { uploadUser } from '@/middleware/userMiddleware'
 import {
@@ -15,12 +16,15 @@ import path from 'path'
 
 const loadFriends = async (req: NewResquest) => {
   const { id } = req.data
+  const { page, limit } = req.query
 
   const result = await getSharedPagination<resultActionUser>({
     select: '*',
     table: TableFriend,
     where: 'owner_id = ? OR friend_id = ?',
-    variable: [id, id]
+    variable: [id, id],
+    limit,
+    page
   })
 
   if (result?.data?.length > 0) {
@@ -73,8 +77,6 @@ const unFriend = async (req: NewResquest) => {
   return req.errorFuc({
     msg: 'Lỗi không xác định'
   })
-
-  console.log(result)
 }
 
 const getMe = async (req: NewResquest) => {
@@ -181,4 +183,56 @@ const updateMe = async (req: NewResquest, res: Express.Response) => {
   })
 }
 
-export { loadFriends, getMe, unFriend, updateMe }
+const searchUser = async (req: NewResquest) => {
+  const { id } = req.data
+  const { q, page, limit } = req.query
+
+  const { str: where, data: variable } = filterBuilder({
+    allow: ['username', 'full_name'],
+    condition: 'OR',
+    obj: {
+      username: q ?? '',
+      full_name: q ?? ''
+    }
+  })
+
+  const userResult = await getSharedPagination<userData>({
+    select: 'id, username, full_name, avatar, is_block_stranger',
+    table: TableUser,
+    where,
+    variable,
+    page,
+    limit
+  })
+
+  if (userResult?.data?.length > 0) {
+    const newData = await awaitAll<userData, any>(userResult.data, async (item) => {
+      const { id: idFriend, avatar, ...spread } = item
+
+      const isFriend = await getOneShared<resultActionUser>({
+        table: TableFriend,
+        select: 'owner_id, friend_id',
+        where: '(owner_id = ? AND friend_id = ?) OR (owner_id = ? AND friend_id = ?)',
+        data: [id, idFriend, idFriend, id]
+      })
+
+      const pathAvatar = pathFullCheck(avatar ?? '', item?.username, req.getUrlPublic('avatar'))
+
+      return {
+        id: idFriend,
+        ...spread,
+        avatar: pathAvatar,
+        is_friend: !!isFriend?.owner_id
+      }
+    })
+
+    userResult.data = newData
+  }
+
+  return req.successOke({
+    msg: 'Lấy dữ liệu thành công',
+    data: userResult
+  })
+}
+
+export { loadFriends, getMe, unFriend, updateMe, searchUser }

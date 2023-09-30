@@ -20,12 +20,15 @@ import path from 'path'
 
 const loadRoom = async (req: NewResquest) => {
   const { id } = req.data
+  const { page, limit } = req.query
 
   const result = await getSharedPagination<resultRoom>({
     table: `${TableRoom}`,
     select: `id, owner_id, friend_id`,
     where: `owner_id = ? OR friend_id = ?`,
-    variable: [id, id]
+    variable: [id, id],
+    page,
+    limit
   })
 
   if (result?.data?.length > 0) {
@@ -284,6 +287,7 @@ const blockRoom = async (req: NewResquest) => {
 
 const loadRoomDetails = async (req: NewResquest) => {
   const { id } = req.data
+  const { page, limit } = req.query
   const { id: room_id, owner_id, friend_id } = req.existData as resultRoom
 
   if (friend_id === id || owner_id === id) {
@@ -311,7 +315,9 @@ const loadRoomDetails = async (req: NewResquest) => {
       table: TableRoomDetails,
       select: 'id, room_id, owner_id, messeage, is_media, is_edit, created_at, updated_at',
       where: `${where} ORDER BY id DESC`,
-      variable: data
+      variable: data,
+      page,
+      limit
     })
 
     if (messeage?.data?.length > 0) {
@@ -515,13 +521,14 @@ const editMesseage = async (req: NewResquest, res: Express.Response) => {
       const ownerData = resultSettings?.find((item) => item?.owner_id === id)
 
       if (ownerData) {
+        const date = new Date()
         const friendData = resultSettings?.find((item) => item?.owner_id !== id)
 
         const isUpdated = await UpdatedShared({
-          select: ['messeage', 'is_edit'],
+          select: ['messeage', 'is_edit', 'updated_at'],
           table: TableRoomDetails,
           where: 'id = ?',
-          values: [messeage, 1, messeage_id]
+          values: [messeage, 1, date, messeage_id]
         })
 
         if (isUpdated) {
@@ -535,12 +542,12 @@ const editMesseage = async (req: NewResquest, res: Express.Response) => {
               data: [owner_id]
             })
 
-            global.socketServer.sockets.in(`room-${room_id}`).emit('update-messeage', {
+            global.socketServer.in(`room-${room_id}`).emit('update-messeage', {
               id: messeage_id,
               messeage,
               is_edit: 1,
               user: newResultUser,
-              updated_at: Date.now()
+              updated_at: date
             })
           }
 

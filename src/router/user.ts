@@ -2,17 +2,19 @@ import express from 'express'
 const router = express.Router()
 
 import { verifyToken } from '@/middleware/tokenMiddleware'
-import { getMe, loadFriends, unFriend, updateMe } from '@/controllers/user.controller'
+import { getMe, loadFriends, searchUser, unFriend, updateMe } from '@/controllers/user.controller'
 import {
   configUserRequest,
   middlewareUserFieldExist,
   uploadUser
 } from '@/middleware/userMiddleware'
 import { validateResquest } from '@/middleware/validateResquest'
-import { configIDRequest } from '@/middleware/shared.middleware'
+import { configGetShared, configIDRequest } from '@/middleware/shared.middleware'
 
-router.get('/friends', verifyToken, loadFriends)
+router.get('/friends', verifyToken, validateResquest(configGetShared), loadFriends)
 router.get('/', verifyToken, getMe)
+router.get('/search', verifyToken, validateResquest(configGetShared), searchUser)
+
 router.patch(
   '/',
   verifyToken,

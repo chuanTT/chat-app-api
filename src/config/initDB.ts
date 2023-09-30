@@ -183,12 +183,12 @@ const initTable = {
     },
 
     is_media: {
-      type: 'varchar(1)',
+      type: 'int(1)',
       default: '0'
     },
 
     is_edit: {
-      type: 'varchar(1)',
+      type: 'int(1)',
       default: '0'
     },
 
@@ -251,27 +251,27 @@ const initTable = {
     },
 
     gender: {
-      type: 'varchar(1)',
+      type: 'int(1)',
       default: '0'
     },
 
     is_online: {
-      type: 'varchar(1)',
+      type: 'int(1)',
       default: '0'
     },
 
     is_lock: {
-      type: 'varchar(1)',
+      type: 'int(1)',
       default: '0'
     },
 
     is_block_stranger: {
-      type: 'varchar(1)',
+      type: 'int(1)',
       default: '0'
     },
 
     is_busy: {
-      type: 'varchar(1)',
+      type: 'int(1)',
       default: '0'
     },
 

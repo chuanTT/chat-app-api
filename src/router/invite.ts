@@ -10,10 +10,10 @@ import {
 import { verifyToken } from '@/middleware/tokenMiddleware'
 import { middlewareUserFieldExist } from '@/middleware/userMiddleware'
 import { validateResquest } from '@/middleware/validateResquest'
-import { configIDRequest } from '@/middleware/shared.middleware'
+import { configGetShared, configIDRequest } from '@/middleware/shared.middleware'
 import { configUserField } from '@/middleware/invitation.middleware'
 
-router.get('/', verifyToken, getListInvite)
+router.get('/', verifyToken, validateResquest(configGetShared), getListInvite)
 
 router.post(
   '/agree',

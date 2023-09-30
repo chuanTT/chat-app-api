@@ -51,11 +51,14 @@ const inviteUser = async (req: NewResquest) => {
 
 const getListInvite = async (req: NewResquest) => {
   const { id } = req.data
+  const { page, limit } = req.query
 
   const result = await getSharedPagination<resultActionUser>({
     table: TableInvitation,
     where: 'friend_id=?',
-    variable: [id.toString()]
+    variable: [id.toString()],
+    page,
+    limit
   })
 
   if (result?.data?.length > 0) {
