@@ -197,7 +197,7 @@ const searchUser = async (req: NewResquest) => {
   })
 
   const userResult = await getSharedPagination<userData>({
-    select: 'id, username, full_name, avatar, is_block_stranger',
+    select: 'id, username, full_name, avatar, is_block_stranger, is_online',
     table: TableUser,
     where,
     variable,

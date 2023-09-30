@@ -44,7 +44,7 @@ const verifyTokenSocket = async (token: string): Promise<returnVerifyTokenSocket
     if (!isEmptyObj(data)) {
       const { id } = data
       const resultDB = await getOneShared<userData>({
-        select: 'id, username, full_name, birthday',
+        select: 'id, username, full_name, birthday, is_online',
         where: 'id=? AND token=?',
         data: [id, token],
         key: 'avatar',
@@ -84,7 +84,7 @@ const verifyToken = async (req: any, res: Response, next: NextFunction) => {
     }
     const { id } = data
     const result = await getOneShared<userData>({
-      select: 'id, username, full_name, birthday, avatar',
+      select: 'id, username, full_name, birthday, avatar, is_online',
       where: 'id=? AND token=?',
       data: [id, token],
       key: 'avatar',

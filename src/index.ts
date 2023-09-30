@@ -10,7 +10,7 @@ import { responsiveFuc } from './middleware/responsive.middleware'
 import { joinUrl } from './common/modelFuc'
 import router from './router'
 import { verifyTokenSocket } from './middleware/tokenMiddleware'
-import { TableRoom, getOneShared } from './model/shared.model'
+import { TableRoom, TableUser, UpdatedShared, getOneShared } from './model/shared.model'
 
 const app = express()
 const PORT = process.env.PORT
@@ -71,6 +71,15 @@ io.use(async (socket, next) => {
   if (token) {
     const result = await verifyTokenSocket(token)
     if (result?.isVerify) {
+      if (result?.data?.is_online === 0) {
+        await UpdatedShared({
+          select: ['is_online'],
+          table: TableUser,
+          values: [1, result?.data.id],
+          where: 'id=?'
+        })
+      }
+
       socket.data = result.data
       next()
     }
@@ -89,6 +98,19 @@ io.on('connection', (socket) => {
 
     if (id === checkRoom?.owner_id || id === checkRoom?.friend_id) {
       socket.join(`room-${checkRoom.id}`)
+    }
+  })
+
+  socket.on('disconnect', async () => {
+    const user = socket.data as userData
+
+    if (user?.is_online === 1) {
+      await UpdatedShared({
+        select: ['is_online'],
+        table: TableUser,
+        values: [0, user.id],
+        where: 'id=?'
+      })
     }
   })
 })
