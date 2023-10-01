@@ -81,7 +81,7 @@ declare global {
 
   interface UpdatedSharedType {
     select: string[]
-    values: (string | number | null)[]
+    values: (string | number | null)[] | (string | number | null)[][]
     where?: string
     table: string
   }

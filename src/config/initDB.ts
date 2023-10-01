@@ -303,23 +303,23 @@ const pool = mysql.createPool({
 ;(async () => {
   console.time()
   try {
-    await pool.query(`USE ${process.env.DATABASE}`)
-    await pool.query(`DROP DATABASE ${process.env.DATABASE}`)
+    await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
+    await pool.query(`DROP DATABASE ${process.env.DATABASE ?? 'chuandinh'}`)
     await pool.query(
-      `CREATE DATABASE ${process.env.DATABASE} /*!40100 COLLATE 'utf8_general_ci' */`
+      `CREATE DATABASE ${process.env.DATABASE ?? 'chuandinh'} /*!40100 COLLATE 'utf8_general_ci' */`
     )
   } catch {
     await pool.query(
-      `CREATE DATABASE ${process.env.DATABASE} /*!40100 COLLATE 'utf8_general_ci' */`
+      `CREATE DATABASE ${process.env.DATABASE ?? 'chuandinh'} /*!40100 COLLATE 'utf8_general_ci' */`
     )
   } finally {
-    await pool.query(`USE ${process.env.DATABASE}`)
+    await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
     const arrKey = Object.keys(initTable)
 
     let arrNewSql = []
 
     await awaitAll(arrKey, async (table) => {
-      await pool.query(`USE ${process.env.DATABASE}`)
+      await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
       const sql = createQuery(table, initTable[table])
       await pool.query(sql)
       const arrSql = createForkey(table, initTable[table])
@@ -327,7 +327,7 @@ const pool = mysql.createPool({
     })
 
     await awaitAll(arrNewSql, async (sql) => {
-      await pool.query(`USE ${process.env.DATABASE}`)
+      await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
       await pool.query(sql)
     })
     console.timeEnd()

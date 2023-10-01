@@ -1,6 +1,6 @@
 import { isEmptyObj } from '@/common/function'
 import { uploadFile } from '@/common/uploadFile'
-import { isNumber, isRequired } from '@/common/validate'
+import { isDependent, isNumber, isRequired } from '@/common/validate'
 import { TableUser, getOneShared } from '@/model/shared.model'
 import { NextFunction, Response } from 'express'
 
@@ -92,4 +92,48 @@ const uploadUser = uploadFile({
   name: 'avatar'
 })
 
-export { middlewareUserExist, middlewareUserFieldExist, configUserRequest, uploadUser }
+const configPass: configValidateType = {
+  password: {
+    rules: [isRequired],
+    msg: {
+      isRequired: 'Mật khẩu không được để trống'
+    }
+  },
+  confirm_password: {
+    rules: [isRequired, isDependent],
+    dependent: 'password',
+    msg: {
+      isRequired: 'Mật khẩu không được để trống',
+      isDependent: 'Mật khẩu không khớp'
+    }
+  }
+}
+
+const configResgiterUser: configValidateType = {
+  ...configPass,
+  username: {
+    rules: [isRequired],
+    dependent: 'password',
+    msg: {
+      isRequired: 'Tài khoản không được để trống',
+      isDependent: 'Tài khoản không khớp'
+    }
+  },
+  gender: {
+    rules: [isRequired],
+    dependent: 'gender',
+    msg: {
+      isRequired: 'Giới tính không được để trống',
+      isDependent: 'Giới tính không khớp'
+    }
+  }
+}
+
+export {
+  middlewareUserExist,
+  middlewareUserFieldExist,
+  configUserRequest,
+  uploadUser,
+  configPass,
+  configResgiterUser
+}

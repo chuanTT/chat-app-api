@@ -23,6 +23,15 @@ const configRoomMeseage: configValidateType = {
   }
 }
 
+const configRoomCaller: configValidateType = {
+  caller_id: {
+    rules: [isRequired],
+    msg: {
+      isRequired: 'caller_id không được để trống'
+    }
+  }
+}
+
 const configRoomBlock: configValidateType = {
   is_block: {
     rules: [isRequired, isNumber],
@@ -79,5 +88,6 @@ export {
   middlewareSharedFieldExist,
   uploadMedia,
   configRoomBlock,
-  configRoomMeseage
+  configRoomMeseage,
+  configRoomCaller
 }

@@ -1,7 +1,7 @@
 import { filterBuilder } from '@/common/FilterFuc'
 import { checkAvatarDefault, pathFullCheck } from '@/common/default'
 import { awaitAll } from '@/common/function'
-import { checkValueResquest, genderCheck, joinUrl } from '@/common/modelFuc'
+import { checkValueResquest, genderCheck } from '@/common/modelFuc'
 import { checkPathCreateFolder, copyFileCustom, unlinkFile } from '@/common/uploadFile'
 import { uploadUser } from '@/middleware/userMiddleware'
 import {

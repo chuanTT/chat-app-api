@@ -86,6 +86,7 @@ io.use(async (socket, next) => {
   }
 })
 
+let activeRoom: number | null = null
 io.on('connection', (socket) => {
   socket.on('private_room', async (data) => {
     const { id } = socket.data
@@ -97,20 +98,38 @@ io.on('connection', (socket) => {
     })
 
     if (id === checkRoom?.owner_id || id === checkRoom?.friend_id) {
+      checkRoom.id && (activeRoom = checkRoom.id)
       socket.join(`room-${checkRoom.id}`)
     }
   })
 
   socket.on('disconnect', async () => {
     const user = socket.data as userData
+    const select = []
+    const values = []
 
     if (user?.is_online === 1) {
+      select.push('is_online')
+      values.push(0)
+    }
+
+    if (user?.is_busy === 1) {
+      select.push('is_busy')
+      values.push(0)
+    }
+
+    if (select?.length > 0) {
       await UpdatedShared({
-        select: ['is_online'],
+        select,
         table: TableUser,
-        values: [0, user.id],
+        values: [...values, user.id],
         where: 'id=?'
       })
+    }
+
+    if (activeRoom) {
+      activeRoom = null
+      socket.leave(`room-${activeRoom}`)
     }
   })
 })

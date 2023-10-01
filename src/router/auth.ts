@@ -5,12 +5,18 @@ import {
   verifyTokenController
 } from '@/controllers/auth.controller'
 import { verifyToken } from '@/middleware/tokenMiddleware'
-import { middlewareUserExist } from '@/middleware/userMiddleware'
+import { configResgiterUser, middlewareUserExist } from '@/middleware/userMiddleware'
+import { validateResquest } from '@/middleware/validateResquest'
 import express from 'express'
 const router = express.Router()
 
 router.post('/login', LoginController)
-router.post('/resgiter', middlewareUserExist(), ResgiterController)
+router.post(
+  '/resgiter',
+  validateResquest(configResgiterUser),
+  middlewareUserExist(),
+  ResgiterController
+)
 router.post('/logout', verifyToken, LogoutController)
 router.get('/verify-token', verifyToken, verifyTokenController)
 

@@ -3,12 +3,14 @@ const router = express.Router()
 
 import {
   blockRoom,
+  callerRoom,
   chatMesseage,
   checkRoom,
   deleteRoom,
   editMesseage,
   loadRoom,
-  loadRoomDetails
+  loadRoomDetails,
+  rejectedCaller
 } from '@/controllers/room.controller'
 import { verifyToken } from '@/middleware/tokenMiddleware'
 import { validateResquest } from '@/middleware/validateResquest'
@@ -19,7 +21,8 @@ import {
   middlewareSharedFieldExist,
   uploadMedia,
   configRoomBlock,
-  configRoomMeseage
+  configRoomMeseage,
+  configRoomCaller
 } from '@/middleware/room.middleware'
 import { TableRoomDetails } from '@/model/shared.model'
 
@@ -30,6 +33,22 @@ router.get(
   validateResquest({ ...configRoomRequest, ...configGetShared }),
   middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
   loadRoomDetails
+)
+
+router.post(
+  '/caller',
+  verifyToken,
+  validateResquest({ ...configRoomRequest, ...configRoomCaller }),
+  middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
+  callerRoom
+)
+
+router.post(
+  '/rejected-caller',
+  verifyToken,
+  validateResquest({ ...configRoomRequest }),
+  middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
+  rejectedCaller
 )
 
 router.patch(

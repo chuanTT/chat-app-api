@@ -564,4 +564,115 @@ const editMesseage = async (req: NewResquest, res: Express.Response) => {
   })
 }
 
-export { loadRoom, checkRoom, deleteRoom, blockRoom, loadRoomDetails, chatMesseage, editMesseage }
+const callerRoom = async (req: NewResquest) => {
+  const { id } = req.data
+  const { caller_id } = req.body
+  const { id: room_id, friend_id, owner_id } = req.existData as resultRoom
+
+  if (id === friend_id || id === owner_id) {
+    const resultRoomSettings = await getShared<resultRoomSettings>({
+      select: 'owner_id, is_block',
+      table: TableRoomSettings,
+      where: 'room_id=?',
+      data: [room_id]
+    })
+
+    if (resultRoomSettings?.length > 0) {
+      const ownerRoomSettings = resultRoomSettings.find((item) => item.owner_id === id)
+      const friendRoomSettings = resultRoomSettings.find((item) => item?.owner_id !== id)
+
+      if (ownerRoomSettings?.is_block === 0 && friendRoomSettings?.is_block === 0) {
+        const isBusyList = await getShared<userData>({
+          select: 'id, is_busy',
+          table: TableUser,
+          where: 'id=? OR id=?',
+          data: [id, friendRoomSettings.owner_id]
+        })
+
+        if (isBusyList?.length > 0) {
+          const ownerUser = isBusyList.find((item) => item.id === id)
+          const friendUser = isBusyList.find((item) => item?.id === friendRoomSettings.owner_id)
+
+          if (ownerUser?.is_busy === 0 && friendUser?.is_busy === 0) {
+            await awaitAll(isBusyList, async (item) => {
+              await UpdatedShared({
+                select: ['is_busy'],
+                where: 'id=?',
+                table: TableUser,
+                values: [1, item.id]
+              })
+            })
+
+            global.socketServer.sockets.in(`room-${room_id}`).emit('caller-pending', {
+              room_id,
+              caller_id
+            })
+
+            return req.successOke({
+              msg: 'Đang call'
+            })
+          }
+        }
+      }
+    }
+  }
+
+  return req.errorFuc({
+    msg: 'Lỗi không xác định'
+  })
+}
+
+const rejectedCaller = async (req: NewResquest) => {
+  const { id } = req.data
+  const { id: room_id, friend_id, owner_id } = req.existData as resultRoom
+
+  if (id === friend_id || id === owner_id) {
+    const friendIDNew = id === friend_id ? owner_id : friend_id
+    const isBusyList = await getShared<userData>({
+      select: 'id, is_busy',
+      table: TableUser,
+      where: 'id=? OR id=?',
+      data: [id, friendIDNew]
+    })
+
+    if (isBusyList?.length > 0) {
+      const ownerUser = isBusyList.find((item) => item.id === id)
+      const friendUser = isBusyList.find((item) => item.id === friendIDNew)
+
+      if (ownerUser?.is_busy === 1 && friendUser?.is_busy === 1) {
+        await awaitAll(isBusyList, async (item) => {
+          await UpdatedShared({
+            select: ['is_busy'],
+            where: 'id=?',
+            table: TableUser,
+            values: [0, item.id]
+          })
+        })
+
+        global.socketServer.sockets.in(`room-${room_id}`).emit('rejected-caller', {
+          rejected: id
+        })
+
+        return req.successOke({
+          msg: 'Hủy cuộc gọi thành công'
+        })
+      }
+    }
+  }
+
+  return req.errorFuc({
+    msg: 'Lỗi không xác định'
+  })
+}
+
+export {
+  loadRoom,
+  checkRoom,
+  deleteRoom,
+  blockRoom,
+  loadRoomDetails,
+  chatMesseage,
+  editMesseage,
+  callerRoom,
+  rejectedCaller
+}
