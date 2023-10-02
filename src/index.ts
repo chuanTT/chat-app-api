@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 config()
 import express from 'express'
 import helmet from 'helmet'
-import path from 'node:path'
+import path from 'path'
 import http from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
