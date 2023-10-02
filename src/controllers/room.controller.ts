@@ -65,7 +65,7 @@ const loadRoom = async (req: NewResquest) => {
         const newID = item?.owner_id === id ? item?.friend_id : item?.owner_id
         const newResultUser = await getOneShared<userData>({
           table: TableUser,
-          select: 'id, full_name,first_name, last_name, username, avatar',
+          select: 'id, full_name, first_name, last_name, username, avatar, is_online',
           BASE_URL: req.getUrlPublic(),
           isImages: true,
           where: 'id=?',

@@ -28,7 +28,7 @@ const LoginController = async (req: NewResquest) => {
       })
 
       return req.successOke({
-        msg: 'Tạo tài khoản thành công',
+        msg: 'Đăng nhập thành công',
         data: { token }
       })
     }
