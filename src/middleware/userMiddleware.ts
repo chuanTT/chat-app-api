@@ -63,14 +63,20 @@ const middlewareUserFieldExist = ({
 }
 
 const configUserRequest: configValidateType = {
-  full_name: {
+  first_name: {
     rules: [isRequired],
+    isDisableKey: true,
     msg: {
-      isRequired: 'Họ và tên không được để trống'
-    },
-    isDisableKey: true
+      isRequired: 'Tên không được để trống'
+    }
   },
-
+  last_name: {
+    rules: [isRequired],
+    isDisableKey: true,
+    msg: {
+      isRequired: 'Họ và đệm không được để trống'
+    }
+  },
   birthday: {
     rules: [isRequired],
     msg: {
@@ -113,18 +119,26 @@ const configResgiterUser: configValidateType = {
   ...configPass,
   username: {
     rules: [isRequired],
-    dependent: 'password',
     msg: {
-      isRequired: 'Tài khoản không được để trống',
-      isDependent: 'Tài khoản không khớp'
+      isRequired: 'Tài khoản không được để trống'
     }
   },
   gender: {
     rules: [isRequired],
-    dependent: 'gender',
     msg: {
-      isRequired: 'Giới tính không được để trống',
-      isDependent: 'Giới tính không khớp'
+      isRequired: 'Giới tính không được để trống'
+    }
+  },
+  first_name: {
+    rules: [isRequired],
+    msg: {
+      isRequired: 'Tên không được để trống'
+    }
+  },
+  last_name: {
+    rules: [isRequired],
+    msg: {
+      isRequired: 'Họ và đệm không được để trống'
     }
   }
 }

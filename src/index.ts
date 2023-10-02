@@ -72,10 +72,11 @@ io.use(async (socket, next) => {
     const result = await verifyTokenSocket(token)
     if (result?.isVerify) {
       if (result?.data?.is_online === 0) {
+        const date = new Date()
         await UpdatedShared({
-          select: ['is_online'],
+          select: ['is_online', 'last_logger'],
           table: TableUser,
-          values: [1, result?.data.id],
+          values: [1, date, result?.data.id],
           where: 'id=?'
         })
       }
@@ -119,10 +120,11 @@ io.on('connection', (socket) => {
     }
 
     if (select?.length > 0) {
+      const date = new Date()
       await UpdatedShared({
-        select,
+        select: [...select, 'last_logger'],
         table: TableUser,
-        values: [...values, user.id],
+        values: [...values, date, user.id],
         where: 'id=?'
       })
     }

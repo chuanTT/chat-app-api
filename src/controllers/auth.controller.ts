@@ -18,11 +18,12 @@ const LoginController = async (req: NewResquest) => {
     const isHasPass = bcryptCompare(password, result?.password ?? '')
 
     if (isHasPass) {
+      const date = new Date()
       const { password: newPwd, ...restData } = result
       const token = createToken({ ...restData })
       await UpdatedShared({
-        select: ['token'],
-        values: [token, restData?.id],
+        select: ['token', 'last_logger'],
+        values: [token, date, restData?.id],
         table: TableUser
       })
 
@@ -40,15 +41,30 @@ const LoginController = async (req: NewResquest) => {
 }
 
 const ResgiterController = async (req: NewResquest) => {
-  const { username, password, gender, birthday } = req.body
+  const { username, password, gender, first_name, last_name } = req.body
 
   const newGender = genderCheck(Number(gender))
   const avatar = defaultAvatarGender(newGender)
   const newPwd = bcryptPass(password)
+  const full_name = `${(last_name as string).trim()} ${(first_name as string).trim()}`
+  const date = new Date()
 
   const { isCheck, id } = await InsertShared({
-    updated: 'username, password, gender, is_online, birthday, avatar',
-    data: [username, newPwd, newGender, 1, birthday ?? null, avatar],
+    updated:
+      'username, password, gender, is_online, avatar, full_name, first_name, last_name, last_logger, created_at, updated_at',
+    data: [
+      username,
+      newPwd,
+      newGender,
+      1,
+      avatar,
+      full_name,
+      (first_name as string).trim(),
+      (last_name as string).trim(),
+      date,
+      date,
+      date
+    ],
     table: TableUser
   })
 
@@ -75,9 +91,10 @@ const ResgiterController = async (req: NewResquest) => {
 
 const LogoutController = async (req: NewResquest) => {
   const { id } = req.data
+  const date = new Date()
   const expiedToken = await UpdatedShared({
-    select: ['token', 'is_online'],
-    values: ['null', 0, id],
+    select: ['token', 'is_online', 'last_logger'],
+    values: [null, 0, date, id],
     table: TableUser
   })
 

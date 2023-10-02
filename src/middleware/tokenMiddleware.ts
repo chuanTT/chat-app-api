@@ -84,7 +84,8 @@ const verifyToken = async (req: any, res: Response, next: NextFunction) => {
     }
     const { id } = data
     const result = await getOneShared<userData>({
-      select: 'id, username, full_name, birthday, avatar, is_online',
+      select:
+        'id, username, first_name, last_name, full_name, birthday, avatar, is_online, last_logger',
       where: 'id=? AND token=?',
       data: [id, token],
       key: 'avatar',

@@ -10,6 +10,7 @@ import { validateResquest } from '@/middleware/validateResquest'
 import express from 'express'
 const router = express.Router()
 
+router.get('/verify-token', verifyToken, verifyTokenController)
 router.post('/login', LoginController)
 router.post(
   '/resgiter',
@@ -18,6 +19,5 @@ router.post(
   ResgiterController
 )
 router.post('/logout', verifyToken, LogoutController)
-router.get('/verify-token', verifyToken, verifyTokenController)
 
 export default router

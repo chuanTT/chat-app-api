@@ -81,7 +81,7 @@ declare global {
 
   interface UpdatedSharedType {
     select: string[]
-    values: (string | number | null)[] | (string | number | null)[][]
+    values: (string | number | null | Date)[] | (string | number | null | Date)[][]
     where?: string
     table: string
   }
@@ -108,6 +108,8 @@ declare global {
   interface userData {
     id: number
     username: string
+    first_name?: string | null
+    last_name?: string | null
     full_name?: string | null
     birthday?: string | null
     avatar?: string | null
@@ -116,6 +118,7 @@ declare global {
     is_lock?: number
     is_block_stranger?: number
     is_busy?: number
+    last_logger?: string | null
     password?: string
     token?: string
     created_at?: string

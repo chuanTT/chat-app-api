@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-var-requires */
 require('dotenv').config()
 const mysql = require('mysql2/promise')
@@ -238,6 +239,14 @@ const initTable = {
       isUnique: true
     },
 
+    first_name: {
+      type: 'varchar(30)'
+    },
+
+    last_name: {
+      type: 'varchar(150)'
+    },
+
     full_name: {
       type: 'varchar(255)'
     },
@@ -275,6 +284,10 @@ const initTable = {
       default: '0'
     },
 
+    last_logger: {
+      type: 'timestamp'
+    },
+
     password: {
       type: 'varchar(255)'
     },
@@ -294,10 +307,15 @@ const initTable = {
 }
 
 const pool = mysql.createPool({
+  // eslint-disable-next-line no-undef
   host: process.env.HOST || '127.0.0.1',
+  // eslint-disable-next-line no-undef
   user: process.env.USER_DB || 'root',
+  // eslint-disable-next-line no-undef
   password: process.env.PASSWORD || '',
-  database: process.env.DATABASE || ''
+  // eslint-disable-next-line no-undef
+  database: process.env.DATABASE || '',
+  charset: 'utf8'
 })
 
 ;(async () => {
@@ -306,18 +324,20 @@ const pool = mysql.createPool({
     await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
     await pool.query(`DROP DATABASE ${process.env.DATABASE ?? 'chuandinh'}`)
     await pool.query(
-      `CREATE DATABASE ${process.env.DATABASE ?? 'chuandinh'} /*!40100 COLLATE 'utf8_general_ci' */`
+      `CREATE DATABASE ${
+        process.env.DATABASE ?? 'chuandinh'
+      } character set UTF8 collate utf8_general_ci`
     )
-  } catch {
+  } catch (error) {
     await pool.query(
-      `CREATE DATABASE ${process.env.DATABASE ?? 'chuandinh'} /*!40100 COLLATE 'utf8_general_ci' */`
+      `CREATE DATABASE ${
+        process.env.DATABASE ?? 'chuandinh'
+      } character set UTF8 collate utf8_general_ci`
     )
   } finally {
     await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
     const arrKey = Object.keys(initTable)
-
     let arrNewSql = []
-
     await awaitAll(arrKey, async (table) => {
       await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
       const sql = createQuery(table, initTable[table])
@@ -325,7 +345,6 @@ const pool = mysql.createPool({
       const arrSql = createForkey(table, initTable[table])
       arrNewSql = [...arrNewSql, ...arrSql]
     })
-
     await awaitAll(arrNewSql, async (sql) => {
       await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
       await pool.query(sql)

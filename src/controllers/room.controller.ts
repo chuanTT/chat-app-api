@@ -1,4 +1,4 @@
-import { awaitAll } from '@/common/function'
+import { awaitAll, isEmptyObj } from '@/common/function'
 import { checkValueResquest, genderCheck } from '@/common/modelFuc'
 import { checkPathCreateFolder, copyFileCustom, unlinkFile } from '@/common/uploadFile'
 import { uploadMedia } from '@/middleware/room.middleware'
@@ -65,7 +65,7 @@ const loadRoom = async (req: NewResquest) => {
         const newID = item?.owner_id === id ? item?.friend_id : item?.owner_id
         const newResultUser = await getOneShared<userData>({
           table: TableUser,
-          select: 'id, full_name, username, avatar',
+          select: 'id, full_name,first_name, last_name, username, avatar',
           BASE_URL: req.getUrlPublic(),
           isImages: true,
           where: 'id=?',
@@ -156,7 +156,7 @@ const checkRoom = async (req: NewResquest) => {
 }
 
 const deleteRoom = async (req: NewResquest) => {
-  const { id, username } = req.data
+  const { id } = req.data
   const { id: room_id, friend_id, owner_id } = req?.existData as resultRoom
 
   if (id === friend_id || id === owner_id) {
@@ -202,11 +202,15 @@ const deleteRoom = async (req: NewResquest) => {
                   if (item?.id) {
                     const isCheckThumb = await DeleteSharedForce({
                       table: TableMediaList,
-                      value: [item?.id]
+                      value: [item.id]
                     })
-
                     if (isCheckThumb) {
-                      const pathMedia = path.join(req?.getDirRoot(), `room`, username, item.media)
+                      const pathMedia = path.join(
+                        req?.getDirRoot(),
+                        `media`,
+                        `room-${room_id}`,
+                        item.media
+                      )
                       unlinkFile(pathMedia)
                     }
                   }
@@ -342,7 +346,7 @@ const loadRoomDetails = async (req: NewResquest) => {
 
         const newResultUser = await getOneShared<userData>({
           table: TableUser,
-          select: 'id, full_name, username, avatar',
+          select: 'id, full_name, first_name, last_name, username, avatar',
           BASE_URL: req.getUrlPublic(),
           isImages: true,
           where: 'id=?',
@@ -397,31 +401,24 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
           const friendData = checkRoom?.find((item) => item?.owner_id !== id)
 
           const { update, data: newDataRequest } = checkValueResquest({
-            obj: { messeage, room_id, owner_id: id },
-            allowKey: [
-              'messeage',
-              'room_id',
-              'owner_id',
-              {
-                key: 'is_media',
-                fuc: () => (req?.file?.filename ? 1 : 0)
-              }
-            ]
+            obj: { messeage, room_id, owner_id: id, is_media: req?.file?.filename ? 1 : 0 },
+            allowKey: ['messeage', 'room_id', 'owner_id', 'is_media']
           })
 
           if (update?.length > 0) {
+            const date = new Date()
             const result = await InsertShared({
-              updated: update.join(','),
+              updated: [...update, 'created_at', 'updated_at'].join(', '),
               table: TableRoomDetails,
-              data: newDataRequest
+              data: [...newDataRequest, date, date]
             })
 
             if (result?.isCheck) {
               if (req?.file?.filename) {
                 const isMedia = await InsertShared({
-                  updated: 'id_messeage, media',
+                  updated: 'id_messeage, media, created_at, updated_at',
                   table: TableMediaList,
-                  data: [result?.id, req?.file?.filename]
+                  data: [result?.id, req?.file?.filename, date, date]
                 })
 
                 if (isMedia?.isCheck) {
@@ -467,7 +464,7 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
 
                   const newResultUser = await getOneShared<userData>({
                     table: TableUser,
-                    select: 'id, full_name, username, avatar',
+                    select: 'id, full_name, first_name, last_name, username, avatar',
                     BASE_URL: req.getUrlPublic(),
                     isImages: true,
                     where: 'id=?',
@@ -665,6 +662,51 @@ const rejectedCaller = async (req: NewResquest) => {
   })
 }
 
+const settingRoom = async (req: NewResquest) => {
+  const { id } = req.data
+  const { id: room_id, owner_id, friend_id } = req.existData as resultRoom
+
+  if (id === owner_id || id === friend_id) {
+    const checkRoomBlock = await getOneShared<resultRoomSettings>({
+      select: 'is_block',
+      where: 'room_id=? AND owner_id = ?',
+      table: TableRoomSettings,
+      data: [room_id, id]
+    })
+
+    if (!isEmptyObj(checkRoomBlock as typeObject)) {
+      const friendId = id === owner_id ? friend_id : owner_id
+      const newResultUser = await getOneShared<userData>({
+        table: TableUser,
+        select:
+          'id, full_name, first_name, last_name, username, avatar, is_online, is_busy, last_logger',
+        BASE_URL: req.getUrlPublic(),
+        isImages: true,
+        where: 'id=?',
+        data: [friendId]
+      })
+
+      if (newResultUser?.id) {
+        return req.successOke({
+          msg: 'Lấy dữ liệu thành công',
+          data: {
+            settings: {
+              ...checkRoomBlock
+            },
+            friend: {
+              ...newResultUser
+            }
+          }
+        })
+      }
+    }
+  }
+
+  return req.errorFuc({
+    msg: 'Lỗi không xác định'
+  })
+}
+
 export {
   loadRoom,
   checkRoom,
@@ -674,5 +716,6 @@ export {
   chatMesseage,
   editMesseage,
   callerRoom,
-  rejectedCaller
+  rejectedCaller,
+  settingRoom
 }

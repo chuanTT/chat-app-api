@@ -10,7 +10,8 @@ import {
   editMesseage,
   loadRoom,
   loadRoomDetails,
-  rejectedCaller
+  rejectedCaller,
+  settingRoom
 } from '@/controllers/room.controller'
 import { verifyToken } from '@/middleware/tokenMiddleware'
 import { validateResquest } from '@/middleware/validateResquest'
@@ -33,6 +34,14 @@ router.get(
   validateResquest({ ...configRoomRequest, ...configGetShared }),
   middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
   loadRoomDetails
+)
+
+router.get(
+  '/setting/:room_id',
+  verifyToken,
+  validateResquest(configRoomRequest),
+  middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
+  settingRoom
 )
 
 router.post(

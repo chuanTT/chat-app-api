@@ -85,7 +85,7 @@ const getMe = async (req: NewResquest) => {
   const newResultUser = await getOneShared<userData>({
     table: TableUser,
     select:
-      'id, full_name, username, avatar, birthday, gender, is_lock, is_block_stranger, created_at, updated_at',
+      'id, full_name, first_name, last_name, username, avatar, birthday, gender, is_lock, is_block_stranger, created_at, updated_at',
     BASE_URL: req.getUrlPublic(),
     isImages: true,
     where: 'id=?',
@@ -99,12 +99,13 @@ const getMe = async (req: NewResquest) => {
 }
 
 const updateMe = async (req: NewResquest, res: Express.Response) => {
-  const { id, username } = req.data
+  const { id, username, last_name, first_name } = req.data
   const { update, data: newDataRequest } = checkValueResquest({
     obj: req.body,
     allowKey: [
-      'full_name',
       'birthday',
+      'first_name',
+      'last_name',
       {
         key: 'gender',
         fuc: (v) => genderCheck(v as number)
@@ -124,6 +125,14 @@ const updateMe = async (req: NewResquest, res: Express.Response) => {
     ]
   })
 
+  if (update.includes('first_name') || update.includes('last_name')) {
+    update.push('full_name')
+    newDataRequest.push(
+      `${(req.body?.['last_name'] as string) || last_name || ''} ${
+        (req.body?.['first_name'] as string) || first_name || ''
+      }`
+    )
+  }
   uploadUser.upload(req as any, res as any, async () => {
     if (req?.fileValidationError) {
       return req.errorFuc({
