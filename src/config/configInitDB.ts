@@ -1,9 +1,22 @@
-/* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-var-requires */
-require('dotenv').config()
-const mysql = require('mysql2/promise')
+export interface initTableTypeColumn {
+  isPrimary?: boolean
+  isIncrement?: boolean
+  type?: string
+  foreign_key?: {
+    table: string
+    column: string
+  }
+  default?: string
+  isUnique?: boolean
+}
 
-const createQuery = (table, config) => {
+export interface initTableType {
+  [key: string]: {
+    [key: string]: initTableTypeColumn
+  }
+}
+
+export const createQuery = (table: string, config: { [key: string]: initTableTypeColumn }) => {
   let sql = `CREATE TABLE ${table}`
   const arrKeyConfig = Object.keys(config)
   const checkIsPrimary = arrKeyConfig.filter((key) => config[key]?.isPrimary)
@@ -23,9 +36,9 @@ const createQuery = (table, config) => {
   return sql
 }
 
-const createForkey = (table, config) => {
+export const createForkey = (table: string, config: { [key: string]: initTableTypeColumn }) => {
   const sql = `ALTER TABLE ${table}`
-  const arrSql = []
+  const arrSql: string[] = []
   const arrKeyConfig = Object.keys(config)
   arrKeyConfig?.forEach((key) => {
     const itemConfig = config?.[key]
@@ -36,18 +49,7 @@ const createForkey = (table, config) => {
   return arrSql
 }
 
-function awaitAll(list, asyncFn) {
-  const promises = []
-
-  list.map((x, i) => {
-    promises.push(asyncFn(x, i))
-  })
-
-  return Promise.all(promises)
-}
-
-// INCREMENT isUnique UNIQUE
-const initTable = {
+export const initTable: initTableType = {
   friend: {
     owner_id: {
       isPrimary: true,
@@ -95,11 +97,6 @@ const initTable = {
   },
 
   room_setting: {
-    // id: {
-    //   type: 'int',
-    //   isPrimary: true,
-    //   isIncrement: true
-    // },
     owner_id: {
       type: 'int',
       foreign_key: {
@@ -305,51 +302,3 @@ const initTable = {
     }
   }
 }
-
-const pool = mysql.createPool({
-  // eslint-disable-next-line no-undef
-  host: process.env.HOST || '127.0.0.1',
-  // eslint-disable-next-line no-undef
-  user: process.env.USER_DB || 'root',
-  // eslint-disable-next-line no-undef
-  password: process.env.PASSWORD || '',
-  // eslint-disable-next-line no-undef
-  database: process.env.DATABASE || '',
-  charset: 'utf8'
-})
-
-;(async () => {
-  console.time()
-  try {
-    await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
-    await pool.query(`DROP DATABASE ${process.env.DATABASE ?? 'chuandinh'}`)
-    await pool.query(
-      `CREATE DATABASE ${
-        process.env.DATABASE ?? 'chuandinh'
-      } character set UTF8 collate utf8_general_ci`
-    )
-  } catch (error) {
-    await pool.query(
-      `CREATE DATABASE ${
-        process.env.DATABASE ?? 'chuandinh'
-      } character set UTF8 collate utf8_general_ci`
-    )
-  } finally {
-    await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
-    const arrKey = Object.keys(initTable)
-    let arrNewSql = []
-    await awaitAll(arrKey, async (table) => {
-      await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
-      const sql = createQuery(table, initTable[table])
-      await pool.query(sql)
-      const arrSql = createForkey(table, initTable[table])
-      arrNewSql = [...arrNewSql, ...arrSql]
-    })
-    await awaitAll(arrNewSql, async (sql) => {
-      await pool.query(`USE ${process.env.DATABASE ?? 'chuandinh'}`)
-      await pool.query(sql)
-    })
-    console.timeEnd()
-    console.log('oke')
-  }
-})()
