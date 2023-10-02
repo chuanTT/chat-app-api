@@ -101,6 +101,10 @@ io.on('connection', (socket) => {
     if (id === checkRoom?.owner_id || id === checkRoom?.friend_id) {
       checkRoom.id && (activeRoom = checkRoom.id)
       socket.join(`room-${checkRoom.id}`)
+
+      socket.on('leave-room', () => {
+        socket.leave(`room-${checkRoom.id}`)
+      })
     }
   })
 
