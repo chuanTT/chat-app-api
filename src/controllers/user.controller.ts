@@ -29,10 +29,10 @@ const loadFriends = async (req: NewResquest) => {
 
   if (result?.data?.length > 0) {
     const data = await awaitAll<resultActionUser, any>(result.data, async (item) => {
-      const newID = item?.friend_id !== id ? item?.owner_id : item?.friend_id
+      const newID = item?.friend_id === id ? item?.owner_id : item?.friend_id
       const newResultUser = await getOneShared<userData>({
         table: TableUser,
-        select: 'id, full_name, username, avatar',
+        select: 'id, full_name, first_name, last_name, username, avatar, is_online, last_logger',
         BASE_URL: req.getUrlPublic(),
         isImages: true,
         where: 'id=?',

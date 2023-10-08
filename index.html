@@ -15,25 +15,26 @@
     ></script>
     <script>
       const token = localStorage.getItem('token')
-      const socket = io('http://localhost:3005/', {
+      const socket = io('http://localhost:3005', {
         auth: {
           token
         }
       })
 
-      // fetch('http://localhost:3005/api/v1/room/1', {
-      //   method: 'PATCH',
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //     'Content-Type': 'application/json; charset=utf-8'
-      //   },
-      //   body: JSON.stringify({
-      //     messeage: 'chuan'
-      //   })
-      // })
+      fetch('https://chat-app-b05y.onrender.com/api/v1/room/chat', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({
+          messeage: 'Nguyễn Đình Chuân',
+          room_id: 4
+        })
+      })
 
-      socket.emit('private_room', { room: 1 })
-      socket.emit('leave-room')
+      socket.emit('private_room', { room: 4 })
+      // socket.emit('leave-room')
 
       // socket.on('messeage', (data) => {
       //   console.log(data)

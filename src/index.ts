@@ -91,6 +91,7 @@ let activeRoom: number | null = null
 io.on('connection', (socket) => {
   socket.on('private_room', async (data) => {
     const { id } = socket.data
+
     const checkRoom = await getOneShared<resultRoom>({
       select: 'id, owner_id, friend_id',
       table: TableRoom,
@@ -104,6 +105,7 @@ io.on('connection', (socket) => {
 
       socket.on('leave-room', () => {
         socket.leave(`room-${checkRoom.id}`)
+        socket.removeAllListeners('leave-room')
       })
     }
   })
@@ -137,6 +139,9 @@ io.on('connection', (socket) => {
       activeRoom = null
       socket.leave(`room-${activeRoom}`)
     }
+
+    socket.removeAllListeners('private_room')
+    socket.removeAllListeners('connection')
   })
 })
 

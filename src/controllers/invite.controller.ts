@@ -24,7 +24,8 @@ const inviteUser = async (req: NewResquest) => {
     const result = await getOneShared<resultActionUser>({
       table: TableInvitation,
       select: 'owner_id, friend_id',
-      data: [id, invite ?? 0]
+      where: '(owner_id = ? AND friend_id = ?) OR (owner_id = ? AND friend_id = ?)',
+      data: [id, invite ?? 0, invite ?? 0, id]
     })
 
     if (!result?.owner_id) {

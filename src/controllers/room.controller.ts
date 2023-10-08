@@ -65,7 +65,7 @@ const loadRoom = async (req: NewResquest) => {
         const newID = item?.owner_id === id ? item?.friend_id : item?.owner_id
         const newResultUser = await getOneShared<userData>({
           table: TableUser,
-          select: 'id, full_name, first_name, last_name, username, avatar, is_online',
+          select: 'id, full_name, first_name, last_name, username, avatar, is_online, last_logger',
           BASE_URL: req.getUrlPublic(),
           isImages: true,
           where: 'id=?',
@@ -93,7 +93,7 @@ const loadRoom = async (req: NewResquest) => {
 
 const checkRoom = async (req: NewResquest) => {
   const { id } = req.data
-  const { id: idFriend } = req.body
+  const { id: idFriend } = req.existData
 
   const result = await getOneShared<resultRoom>({
     table: `${TableRoom}`,
@@ -103,10 +103,20 @@ const checkRoom = async (req: NewResquest) => {
   })
 
   if (result?.id) {
+    const checkRoomBlock = await getOneShared<resultRoomSettings>({
+      select: 'is_block',
+      where: 'room_id=? AND owner_id = ?',
+      table: TableRoomSettings,
+      data: [result.id, id]
+    })
+
     return req.successOke({
       msg: 'thành công',
       data: {
-        room_id: result?.id
+        room_id: result?.id,
+        settings: {
+          ...checkRoomBlock
+        }
       }
     })
   } else {
@@ -143,7 +153,10 @@ const checkRoom = async (req: NewResquest) => {
         return req.successOke({
           msg: 'thành công',
           data: {
-            room_id: roomSuccess?.id
+            room_id: roomSuccess?.id,
+            settings: {
+              is_block: 0
+            }
           }
         })
       }
@@ -318,8 +331,10 @@ const loadRoomDetails = async (req: NewResquest) => {
     const messeage = await getSharedPagination<resultRoomDetail>({
       table: TableRoomDetails,
       select: 'id, room_id, owner_id, messeage, is_media, is_edit, created_at, updated_at',
-      where: `${where} ORDER BY id DESC`,
+      where: `${where}`,
+      key: 'id',
       variable: data,
+      isASC: true,
       page,
       limit
     })
@@ -662,51 +677,6 @@ const rejectedCaller = async (req: NewResquest) => {
   })
 }
 
-const settingRoom = async (req: NewResquest) => {
-  const { id } = req.data
-  const { id: room_id, owner_id, friend_id } = req.existData as resultRoom
-
-  if (id === owner_id || id === friend_id) {
-    const checkRoomBlock = await getOneShared<resultRoomSettings>({
-      select: 'is_block',
-      where: 'room_id=? AND owner_id = ?',
-      table: TableRoomSettings,
-      data: [room_id, id]
-    })
-
-    if (!isEmptyObj(checkRoomBlock as typeObject)) {
-      const friendId = id === owner_id ? friend_id : owner_id
-      const newResultUser = await getOneShared<userData>({
-        table: TableUser,
-        select:
-          'id, full_name, first_name, last_name, username, avatar, is_online, is_busy, last_logger',
-        BASE_URL: req.getUrlPublic(),
-        isImages: true,
-        where: 'id=?',
-        data: [friendId]
-      })
-
-      if (newResultUser?.id) {
-        return req.successOke({
-          msg: 'Lấy dữ liệu thành công',
-          data: {
-            settings: {
-              ...checkRoomBlock
-            },
-            friend: {
-              ...newResultUser
-            }
-          }
-        })
-      }
-    }
-  }
-
-  return req.errorFuc({
-    msg: 'Lỗi không xác định'
-  })
-}
-
 export {
   loadRoom,
   checkRoom,
@@ -716,6 +686,5 @@ export {
   chatMesseage,
   editMesseage,
   callerRoom,
-  rejectedCaller,
-  settingRoom
+  rejectedCaller
 }

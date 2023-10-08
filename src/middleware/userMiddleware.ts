@@ -47,6 +47,7 @@ const middlewareUserFieldExist = ({
       })
 
       if (!isEmptyObj(checkUserExist)) {
+        req.existData = checkUserExist
         return next()
       } else {
         return (req as NewResquest).errorFuc({
