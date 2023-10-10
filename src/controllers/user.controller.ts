@@ -7,6 +7,7 @@ import { uploadUser } from '@/middleware/userMiddleware'
 import {
   DeleteSharedForce,
   TableFriend,
+  TableInvitation,
   TableUser,
   UpdatedShared,
   getOneShared,
@@ -208,8 +209,8 @@ const searchUser = async (req: NewResquest) => {
   const userResult = await getSharedPagination<userData>({
     select: 'id, username, full_name, avatar, is_block_stranger, is_online',
     table: TableUser,
-    where,
-    variable,
+    where: `${where ? `${where} AND id <> ?` : 'id<>'}`,
+    variable: [...variable, id],
     page,
     limit
   })
@@ -220,10 +221,23 @@ const searchUser = async (req: NewResquest) => {
 
       const isFriend = await getOneShared<resultActionUser>({
         table: TableFriend,
-        select: 'owner_id, friend_id',
+        select: 'owner_id',
         where: '(owner_id = ? AND friend_id = ?) OR (owner_id = ? AND friend_id = ?)',
         data: [id, idFriend, idFriend, id]
       })
+
+      let is_invite = false
+
+      if (!isFriend?.owner_id) {
+        const isInvite = await getOneShared<resultActionUser>({
+          table: TableInvitation,
+          select: 'owner_id',
+          where: '(owner_id = ? AND friend_id = ?) OR (owner_id = ? AND friend_id = ?)',
+          data: [id, idFriend, idFriend, id]
+        })
+
+        is_invite = !!isInvite?.owner_id
+      }
 
       const pathAvatar = pathFullCheck(avatar ?? '', item?.username, req.getUrlPublic('avatar'))
 
@@ -231,7 +245,8 @@ const searchUser = async (req: NewResquest) => {
         id: idFriend,
         ...spread,
         avatar: pathAvatar,
-        is_friend: !!isFriend?.owner_id
+        is_friend: !!isFriend?.owner_id,
+        is_invite
       }
     })
 

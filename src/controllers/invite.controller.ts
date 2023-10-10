@@ -36,9 +36,8 @@ const inviteUser = async (req: NewResquest) => {
       })
 
       if (isSucces) {
-        return req.errorFuc({
-          msg: 'Mời kết bạn thành công',
-          code: 400
+        return req.successOke({
+          msg: 'Mời kết bạn thành công'
         })
       }
     }

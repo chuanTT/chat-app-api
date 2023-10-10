@@ -110,10 +110,20 @@ const checkRoom = async (req: NewResquest) => {
       data: [result.id, id]
     })
 
+    const newResultUser = await getOneShared<userData>({
+      table: TableUser,
+      select: 'id, full_name, first_name, last_name, username, avatar, is_online, last_logger',
+      BASE_URL: req.getUrlPublic(),
+      isImages: true,
+      where: 'id=?',
+      data: [idFriend]
+    })
+
     return req.successOke({
       msg: 'thành công',
       data: {
         room_id: result?.id,
+        friend: newResultUser,
         settings: {
           ...checkRoomBlock
         }
@@ -150,10 +160,20 @@ const checkRoom = async (req: NewResquest) => {
           })
         })
 
+        const newResultUser = await getOneShared<userData>({
+          table: TableUser,
+          select: 'id, full_name, first_name, last_name, username, avatar, is_online, last_logger',
+          BASE_URL: req.getUrlPublic(),
+          isImages: true,
+          where: 'id=?',
+          data: [idFriend]
+        })
+
         return req.successOke({
           msg: 'thành công',
           data: {
             room_id: roomSuccess?.id,
+            friend: newResultUser,
             settings: {
               is_block: 0
             }
