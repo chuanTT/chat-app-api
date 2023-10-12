@@ -26,7 +26,7 @@ app.use(
 
 app.use(cors())
 
-app.use(express.static('src/public'))
+app.use(express.static(path.resolve(__dirname, 'public')))
 
 app.use(function (req, _res, next) {
   req.getUrl = function () {

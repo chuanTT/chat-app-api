@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "dev": "npx nodemon",
-    "build": "npm install && rimraf ./dist && tsc && tsc-alias",
+    "build": "npm install && rimraf ./dist && tsc && tsc-alias && npm run copyFolder",
     "start": "node dist/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "init:db": "npx ts-node src/config/initDB.ts"
+    "init:db": "npx ts-node src/config/initDB.ts",
+    "copyFolder": "copyfiles -u 1 src/public/avatar/default/*.png dist/"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +36,7 @@
     "@types/socket.io": "^3.0.2",
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
+    "copyfiles": "^2.4.1",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
