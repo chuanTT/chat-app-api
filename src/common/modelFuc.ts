@@ -146,7 +146,7 @@ const getFormat = (dateString = '') => {
   return `${y}-${m}-${day}`
 }
 
-const genderCheck = (gerder: number) => (gerder === 0 ? 0 : 1)
+const genderCheck = (gerder: number) => (Number(gerder) === 0 ? 0 : 1)
 
 const checkValueResquest = ({
   obj,
