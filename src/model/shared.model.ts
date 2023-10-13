@@ -92,7 +92,7 @@ const getShared = async <T>({
       result = (isImages ? PathImages({ data: row, key, BASE_URL, keyFolder, folder }) : row) as T[]
     }
   } catch (err) {
-    console.log(err)
+    result = []
   } finally {
     // eslint-disable-next-line no-unsafe-finally
     return result

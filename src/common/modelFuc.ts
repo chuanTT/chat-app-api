@@ -32,12 +32,27 @@ const joinUrl = (dir?: string, BASE_URL: string = '/', link = '/') => {
     BASE_URL += link
   }
 
+  if (BASE_URL?.length > 1) {
+    BASE_URL = BASE_URL.replace(/^[\\/]{1,}/, '')
+  }
+
   if (dir) {
     dir = dir.replace(/^[\\/]{1,}/, '')
     return `${BASE_URL}${dir}`
   } else {
+    BASE_URL = BASE_URL.replace(/[\\/]{1,}$/, '')
     return BASE_URL
   }
+}
+
+export const joinPathParent = (...arg: string[]) => {
+  let str = ''
+  if (arg && arg?.length > 0) {
+    arg.forEach((item) => {
+      str = joinUrl(item, str)
+    })
+  }
+  return str
 }
 
 const PathImages = ({

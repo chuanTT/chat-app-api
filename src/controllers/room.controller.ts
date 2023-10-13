@@ -1,5 +1,5 @@
 import { awaitAll, isEmptyObj } from '@/common/function'
-import { checkValueResquest, genderCheck } from '@/common/modelFuc'
+import { PathImages, checkValueResquest, genderCheck, joinPathParent } from '@/common/modelFuc'
 import { checkPathCreateFolder, copyFileCustom, unlinkFile } from '@/common/uploadFile'
 import { uploadMedia } from '@/middleware/room.middleware'
 import {
@@ -367,15 +367,25 @@ const loadRoomDetails = async (req: NewResquest) => {
         if (Number(is_media) === 1) {
           list_media = await getShared<any>({
             select: '*',
-            BASE_URL: req.getUrlPublic('media'),
-            isImages: true,
             data: [spread.id],
             where: 'id_messeage=?',
-            keyFolder: 'room_id',
-            folder: 'room-',
-            table: TableMediaList,
-            key: 'media'
+            table: TableMediaList
           })
+
+          if (list_media?.length > 0) {
+            list_media = list_media.map((item) => {
+              const pathUrl = joinPathParent(
+                req.getUrlPublic('media'),
+                `room-${room_id}`,
+                item?.media
+              )
+
+              return {
+                ...item,
+                media: pathUrl
+              }
+            })
+          }
         }
 
         const newResultUser = await getOneShared<userData>({
