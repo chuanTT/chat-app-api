@@ -494,15 +494,25 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
                 if (Number(is_media) === 1) {
                   list_media = await getShared<any>({
                     select: '*',
-                    BASE_URL: req.getUrlPublic('media'),
-                    isImages: true,
-                    data: [newMesseage.id],
+                    data: [spread.id],
                     where: 'id_messeage=?',
-                    keyFolder: 'id',
-                    folder: 'room-',
-                    table: TableMediaList,
-                    key: 'media'
+                    table: TableMediaList
                   })
+
+                  if (list_media?.length > 0) {
+                    list_media = list_media.map((item) => {
+                      const pathUrl = joinPathParent(
+                        req.getUrlPublic('media'),
+                        `room-${room_id}`,
+                        item?.media
+                      )
+
+                      return {
+                        ...item,
+                        media: pathUrl
+                      }
+                    })
+                  }
                 }
 
                 const newResultUser = await getOneShared<userData>({
