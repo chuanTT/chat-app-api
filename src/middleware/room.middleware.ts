@@ -35,6 +35,7 @@ const configRoomCaller: configValidateType = {
 const configRoomBlock: configValidateType = {
   is_block: {
     rules: [isRequired, isNumber],
+    isDisableKey: true,
     msg: {
       isRequired: 'không được để trống',
       isNumber: 'phải là số'

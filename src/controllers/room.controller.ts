@@ -1,5 +1,11 @@
 import { awaitAll, isEmptyObj } from '@/common/function'
-import { PathImages, checkValueResquest, genderCheck, joinPathParent } from '@/common/modelFuc'
+import {
+  PathImages,
+  checkValueResquest,
+  genderCheck,
+  joinPathParent,
+  notCheck
+} from '@/common/modelFuc'
 import { checkPathCreateFolder, copyFileCustom, unlinkFile } from '@/common/uploadFile'
 import { uploadMedia } from '@/middleware/room.middleware'
 import {
@@ -276,7 +282,7 @@ const blockRoom = async (req: NewResquest) => {
   const { id: room_id, friend_id, owner_id } = req?.existData as resultRoom
 
   if (id === friend_id || id === owner_id) {
-    is_block = genderCheck(Number(is_block))
+    console.log()
     const checkRoomBlock = await getOneShared<resultRoomSettings>({
       select: 'owner_id, is_block, count_block_id',
       where: 'room_id=? AND owner_id = ?',
@@ -289,6 +295,10 @@ const blockRoom = async (req: NewResquest) => {
         is_block: 0,
         count_block_id: 0
       }
+      is_block =
+        is_block !== undefined
+          ? genderCheck(Number(is_block))
+          : notCheck(checkRoomBlock?.is_block as number)
 
       if (Number(is_block) === 1) {
         const lastMesseage = await getOneShared<any>({

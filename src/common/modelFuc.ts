@@ -162,6 +162,7 @@ const getFormat = (dateString = '') => {
 }
 
 const genderCheck = (gerder: number) => (Number(gerder) === 0 ? 0 : 1)
+const notCheck = (num: number) => (Number(num) === 0 ? 1 : 0)
 
 const checkValueResquest = ({
   obj,
@@ -204,5 +205,6 @@ export {
   aliasConvert,
   getFormat,
   genderCheck,
-  checkValueResquest
+  checkValueResquest,
+  notCheck
 }
