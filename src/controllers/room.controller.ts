@@ -354,7 +354,6 @@ const loadRoomDetails = async (req: NewResquest) => {
       where: `${where}`,
       key: 'id',
       variable: data,
-      isASC: true,
       page,
       limit
     })
@@ -463,64 +462,65 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
                 }
               }
 
-              if (friendData?.is_block === 0) {
-                let obj: any = {}
-                const newMesseage = await getOneShared<resultRoomDetail>({
-                  select:
-                    'id, room_id, owner_id, messeage, is_media, is_edit, created_at, updated_at',
-                  table: TableRoomDetails,
-                  where: 'id=?',
-                  data: [result?.id]
-                })
+              let obj: any = {}
+              const newMesseage = await getOneShared<resultRoomDetail>({
+                select:
+                  'id, room_id, owner_id, messeage, is_media, is_edit, created_at, updated_at',
+                table: TableRoomDetails,
+                where: 'id=?',
+                data: [result?.id]
+              })
 
-                if (newMesseage?.id) {
-                  const {
-                    is_media,
-                    created_at,
-                    updated_at,
-                    owner_id: LastMsgOneId,
-                    ...spread
-                  } = newMesseage
-                  let list_media: any[] = []
+              if (newMesseage?.id) {
+                const {
+                  is_media,
+                  created_at,
+                  updated_at,
+                  owner_id: LastMsgOneId,
+                  ...spread
+                } = newMesseage
+                let list_media: any[] = []
 
-                  if (Number(is_media) === 1) {
-                    list_media = await getShared<any>({
-                      select: '*',
-                      BASE_URL: req.getUrlPublic('media'),
-                      isImages: true,
-                      data: [newMesseage.id],
-                      where: 'id_messeage=?',
-                      keyFolder: 'id',
-                      folder: 'room-',
-                      table: TableMediaList,
-                      key: 'media'
-                    })
-                  }
-
-                  const newResultUser = await getOneShared<userData>({
-                    table: TableUser,
-                    select: 'id, full_name, first_name, last_name, username, avatar',
-                    BASE_URL: req.getUrlPublic(),
+                if (Number(is_media) === 1) {
+                  list_media = await getShared<any>({
+                    select: '*',
+                    BASE_URL: req.getUrlPublic('media'),
                     isImages: true,
-                    where: 'id=?',
-                    data: [LastMsgOneId]
+                    data: [newMesseage.id],
+                    where: 'id_messeage=?',
+                    keyFolder: 'id',
+                    folder: 'room-',
+                    table: TableMediaList,
+                    key: 'media'
                   })
-
-                  obj = {
-                    ...obj,
-                    ...spread,
-                    user: newResultUser,
-                    list_media,
-                    created_at,
-                    updated_at
-                  }
                 }
 
-                global.socketServer.sockets.in(`room-${room_id}`).emit('messeage', obj)
+                const newResultUser = await getOneShared<userData>({
+                  table: TableUser,
+                  select: 'id, full_name, first_name, last_name, username, avatar',
+                  BASE_URL: req.getUrlPublic(),
+                  isImages: true,
+                  where: 'id=?',
+                  data: [LastMsgOneId]
+                })
+
+                obj = {
+                  ...obj,
+                  ...spread,
+                  user: newResultUser,
+                  list_media,
+                  created_at,
+                  updated_at
+                }
+              }
+
+              if (friendData?.is_block === 0) {
+                global.socketServer.socket.broadcast.in(`room-${room_id}`).emit('messeage', obj)
               }
 
               return req.successOke({
-                msg: 'Gửi tin nhắn thành công'
+                msg: 'Gửi tin nhắn thành công',
+                data: obj
               })
             }
           }
