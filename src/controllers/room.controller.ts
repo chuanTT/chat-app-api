@@ -515,7 +515,7 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
               }
 
               if (friendData?.is_block === 0) {
-                global.socketServer.socket.broadcast.in(`room-${room_id}`).emit('messeage', obj)
+                global.socketServer.sockets.in(`room-${room_id}`).emit('messeage', obj)
               }
 
               return req.successOke({
