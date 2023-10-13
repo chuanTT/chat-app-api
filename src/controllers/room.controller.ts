@@ -371,7 +371,7 @@ const loadRoomDetails = async (req: NewResquest) => {
             isImages: true,
             data: [spread.id],
             where: 'id_messeage=?',
-            keyFolder: 'id',
+            keyFolder: 'room_id',
             folder: 'room-',
             table: TableMediaList,
             key: 'media'
