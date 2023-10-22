@@ -667,7 +667,8 @@ const callerRoom = async (req: NewResquest) => {
 
             global.socketServer.sockets.in(`room-${room_id}`).emit('caller-pending', {
               room_id,
-              caller_id
+              caller_id,
+              receiver_id: friendRoomSettings?.owner_id
             })
 
             return req.successOke({
