@@ -8,6 +8,7 @@ import {
   checkRoom,
   deleteRoom,
   editMesseage,
+  existRoom,
   loadRoom,
   loadRoomDetails,
   rejectedCaller
@@ -33,6 +34,14 @@ router.get(
   validateResquest({ ...configRoomRequest, ...configGetShared }),
   middlewareSharedFieldExist({ key: 'room_id', field: 'id, owner_id, friend_id' }),
   loadRoomDetails
+)
+
+router.get(
+  '/exist/:id',
+  verifyToken,
+  validateResquest(configIDRequest),
+  middlewareSharedFieldExist({ key: 'id', field: 'id, owner_id, friend_id' }),
+  existRoom
 )
 
 router.get(

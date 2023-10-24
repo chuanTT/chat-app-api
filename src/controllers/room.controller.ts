@@ -566,7 +566,7 @@ const chatMesseage = async (req: NewResquest, res: Express.Response) => {
   })
 }
 
-const editMesseage = async (req: NewResquest, res: Express.Response) => {
+const editMesseage = async (req: NewResquest) => {
   const { messeage } = req.body
   const { id } = req.data
   const { id: messeage_id, owner_id, room_id } = req.existData as resultRoomDetail
@@ -619,6 +619,35 @@ const editMesseage = async (req: NewResquest, res: Express.Response) => {
         }
       }
     }
+  }
+
+  return req.errorFuc({
+    msg: 'Lỗi không xác định'
+  })
+}
+
+const existRoom = async (req: NewResquest) => {
+  const { id } = req.data
+  const { id: room_id, owner_id, friend_id } = req.existData as resultRoom
+
+  if (id === owner_id || id === friend_id) {
+    const id_friend = id === friend_id ? owner_id : friend_id
+    const newResultUser = await getOneShared<userData>({
+      table: TableUser,
+      select: 'id, full_name, first_name, last_name, username, avatar, is_online, last_logger',
+      BASE_URL: req.getUrlPublic(),
+      isImages: true,
+      where: 'id=?',
+      data: [id_friend]
+    })
+
+    return req.successOke({
+      msg: 'Lấy dữ liệu thành công',
+      data: {
+        room_id,
+        friend: newResultUser
+      }
+    })
   }
 
   return req.errorFuc({
@@ -737,5 +766,6 @@ export {
   chatMesseage,
   editMesseage,
   callerRoom,
-  rejectedCaller
+  rejectedCaller,
+  existRoom
 }
