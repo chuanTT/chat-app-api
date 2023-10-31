@@ -1,8 +1,13 @@
 import { config } from 'dotenv'
+import mysql from 'mysql2/promise'
 import { awaitAll } from '@/common/function'
-import pool from './db'
 import { createForkey, createQuery, initTable } from './configInitDB'
+import { configObjectDB } from './db'
 config()
+
+const { database: _, ...newConfigObjectDB } = configObjectDB
+
+const pool = mysql.createPool(newConfigObjectDB)
 
 const DATABASE = process.env.DATABASE ?? 'chuandinh'
 
