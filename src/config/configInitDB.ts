@@ -266,9 +266,9 @@ export const initTable: initTableType = {
       default: '0'
     },
 
-    is_lock: {
-      type: 'int(1)',
-      default: '0'
+    subscribe_room: {
+      type: 'int',
+      default: 'null'
     },
 
     is_block_stranger: {

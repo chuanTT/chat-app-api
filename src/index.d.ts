@@ -115,7 +115,7 @@ declare global {
     avatar?: string | null
     gender?: number
     is_online?: number
-    is_lock?: number
+    subscribe_room?: number
     is_block_stranger?: number
     is_busy?: number
     last_logger?: string | null

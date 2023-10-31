@@ -22,8 +22,8 @@ const LoginController = async (req: NewResquest) => {
       const { password: newPwd, ...restData } = result
       const token = createToken({ ...restData })
       await UpdatedShared({
-        select: ['token', 'last_logger'],
-        values: [token, date, restData?.id],
+        select: ['token', 'last_logger', 'is_online'],
+        values: [token, date, 1, restData?.id],
         table: TableUser
       })
 

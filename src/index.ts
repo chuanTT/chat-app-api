@@ -115,25 +115,32 @@ io.on('connection', (socket) => {
     const select = []
     const values = []
 
-    if (user?.is_online === 1) {
-      select.push('is_online')
-      values.push(0)
+    const userData = await getOneShared<userData>({
+      table: TableUser,
+      select: 'is_online, is_busy',
+      where: 'id=?',
+      data: [user?.id]
+    })
+
+    if (userData) {
+      if (userData?.is_online === 1) {
+        select.push('is_online')
+        values.push(0)
+      }
+
+      if (userData?.is_busy === 1) {
+        select.push('is_busy')
+        values.push(0)
+      }
     }
 
-    if (user?.is_busy === 1) {
-      select.push('is_busy')
-      values.push(0)
-    }
-
-    if (select?.length > 0) {
-      const date = new Date()
-      await UpdatedShared({
-        select: [...select, 'last_logger'],
-        table: TableUser,
-        values: [...values, date, user.id],
-        where: 'id=?'
-      })
-    }
+    const date = new Date()
+    await UpdatedShared({
+      select: [...select, 'last_logger'],
+      table: TableUser,
+      values: [...values, date, user.id],
+      where: 'id=?'
+    })
 
     if (activeRoom) {
       activeRoom = null
@@ -141,7 +148,6 @@ io.on('connection', (socket) => {
     }
 
     socket.removeAllListeners('private_room')
-    socket.removeAllListeners('connection')
   })
 })
 

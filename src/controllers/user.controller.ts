@@ -86,7 +86,7 @@ const getMe = async (req: NewResquest) => {
   const newResultUser = await getOneShared<userData>({
     table: TableUser,
     select:
-      'id, full_name, first_name, last_name, username, avatar, birthday, gender, is_lock, is_block_stranger, created_at, updated_at',
+      'id, full_name, first_name, last_name, username, avatar, birthday, gender, is_block_stranger, created_at, updated_at',
     BASE_URL: req.getUrlPublic(),
     isImages: true,
     where: 'id=?',
@@ -109,10 +109,6 @@ const updateMe = async (req: NewResquest, res: Express.Response) => {
       'last_name',
       {
         key: 'gender',
-        fuc: (v) => genderCheck(v as number)
-      },
-      {
-        key: 'is_lock',
         fuc: (v) => genderCheck(v as number)
       },
       {
